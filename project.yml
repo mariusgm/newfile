@@ -39,6 +39,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: dev.newfile.NewFile
         CODE_SIGN_ENTITLEMENTS: App/NewFile.entitlements
         INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 mariusgm. MIT licensed."
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     dependencies:
       - target: NewFileExtension
         embed: true
