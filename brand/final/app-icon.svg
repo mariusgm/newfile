@@ -1,0 +1,16 @@
+<!-- NewFile · macOS app icon · 1024×1024 squircle plate + mark at 70% scale, centered -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Squircle background plate -->
+  <rect width="1024" height="1024" rx="200" fill="#FAFAFA"/>
+  <!-- Mark scaled 11.25× from 64-viewBox into a 720×720 area, centered at (152, 152) -->
+  <mask id="frame">
+    <rect width="1024" height="1024" fill="#fff"/>
+    <rect x="332" y="309.5" width="360" height="405" rx="22.5" fill="#000"/>
+  </mask>
+  <rect x="287" y="264.5" width="450" height="495" rx="45" fill="#111111" mask="url(#frame)"/>
+  <g fill="#FF6B35">
+    <rect x="379.8125" y="354.5" width="28.125" height="101.25"/>
+    <rect x="354.5" y="354.5" width="78.75" height="16.875"/>
+    <rect x="354.5" y="438.875" width="78.75" height="16.875"/>
+  </g>
+</svg>

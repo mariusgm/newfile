@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NewFile — Step 4 preview · concept 01 variations</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 13px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    background: #FAFAFA;
+    color: #111;
+    padding: 32px 40px 80px;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h2 {
+    font-size: 12px; font-weight: 600; margin: 36px 0 12px;
+    text-transform: uppercase; letter-spacing: 0.08em; color: #555;
+  }
+  .subtitle { color: #666; margin: 0 0 6px; }
+  .meta {
+    display: flex; gap: 14px; flex-wrap: wrap; margin: 8px 0 0;
+    font-size: 11px; color: #666;
+  }
+  .meta span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.15); }
+
+  .row {
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin: 0 0 14px;
+  }
+  .row-label {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; opacity: 0.65; margin: 0 0 16px;
+  }
+  .bg-dark   { background: #1C1C1E; color: #FAFAFA; }
+  .bg-darker { background: #0F0F10; color: #FAFAFA; }
+  .bg-light  { background: #F5F5F7; color: #111; }
+  .bg-white  { background: #FFFFFF; color: #111; border: 1px solid rgba(0,0,0,0.06); }
+  .bg-gray   { background: #808080; color: #111; }
+
+  /* Overview row — large concepts */
+  .overview {
+    display: flex; gap: 28px; align-items: center; flex-wrap: wrap;
+  }
+  .overview .item {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .overview .name {
+    font-size: 11px; font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+  }
+  .overview svg { display: block; }
+
+  /* Size scaling row */
+  .scale-row {
+    display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap;
+  }
+  .scale-col {
+    display: flex; flex-direction: column; gap: 6px; align-items: center;
+  }
+  .scale-col .label {
+    font-size: 10px; opacity: 0.6;
+  }
+  .scale-sizes {
+    display: flex; gap: 10px; align-items: flex-end;
+  }
+  .scale-sizes .cell {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 9px; opacity: 0.55;
+  }
+
+  /* Background testing — three columns */
+  .bg-test {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .bg-test .cell {
+    border-radius: 10px;
+    padding: 18px 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+  }
+  .bg-test .cell .label {
+    font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .bg-test .row-of-marks {
+    display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* Monochrome test */
+  .mono-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .mono-grid .cell {
+    border-radius: 10px; padding: 22px 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+  }
+  .mono-grid .cell .label {
+    font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.6;
+  }
+
+  /* Favicon mock */
+  .browser-strip {
+    background: #ECECEE;
+    border: 1px solid #D5D5D7;
+    border-radius: 10px 10px 6px 6px;
+    padding: 8px 8px 0;
+    display: flex; gap: 4px;
+  }
+  .tab {
+    background: #FAFAFA;
+    border: 1px solid #D5D5D7;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 7px 11px 9px;
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 11px;
+    color: #1d1d1f;
+    min-width: 130px;
+    box-shadow: 0 -1px 0 rgba(0,0,0,0.02);
+  }
+  .tab.active { background: #FFFFFF; }
+  .tab .favicon { width: 14px; height: 14px; flex: 0 0 14px; }
+  .tab .title {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    max-width: 110px;
+  }
+
+  /* App icon */
+  .appicons {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+  .appicon-cell {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .appicon-cell .name { font-size: 10.5px; opacity: 0.7; }
+  .app-icon-frame {
+    width: 112px; height: 112px;
+    border-radius: 26px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.10);
+  }
+  .app-icon-light {
+    background: #FAFAFA;
+    color: #111;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+  .app-icon-dark {
+    background: #1C1C1E;
+    color: #FAFAFA;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  /* Sizing helpers */
+  .s16 { width: 16px; height: 16px; }
+  .s24 { width: 24px; height: 24px; }
+  .s32 { width: 32px; height: 32px; }
+  .s48 { width: 48px; height: 48px; }
+  .s64 { width: 64px; height: 64px; }
+  .s80 { width: 80px; height: 80px; }
+  .s96 { width: 96px; height: 96px; }
+  .s128 { width: 128px; height: 128px; }
+  .s256 { width: 256px; height: 256px; }
+  span.svg-host { display: inline-block; line-height: 0; }
+  span.svg-host svg { width: 100%; height: 100%; }
+
+  .footer-notes {
+    margin-top: 28px;
+    padding: 18px 22px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 10px;
+    line-height: 1.6;
+  }
+  .footer-notes h3 { margin: 0 0 8px; font-size: 13px; }
+  .footer-notes ul { margin: 0; padding-left: 18px; }
+  .footer-notes li { margin: 4px 0; }
+  code { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 11.5px; }
+</style>
+</head>
+<body>
+
+<h1>NewFile — Step 4 preview · concept 01 variations</h1>
+<p class="subtitle">5 cursor-execution variations of the rect-frame-with-cursor mark. Color: <code>#111</code> frame · <code>#FF6B35</code> accent.</p>
+<div class="meta">
+  <span><span class="swatch" style="background:#111"></span>Foreground <code>#111111</code></span>
+  <span><span class="swatch" style="background:#FAFAFA"></span>Background <code>#FAFAFA</code></span>
+  <span><span class="swatch" style="background:#FF6B35"></span>Accent <code>#FF6B35</code></span>
+</div>
+
+<!-- 1. Overview Grid -->
+<h2>1 · Overview · 80px on brand backgrounds</h2>
+<div class="row bg-dark">
+  <div class="row-label">Brand dark · #1C1C1E</div>
+  <div class="overview" id="overview-dark"></div>
+</div>
+<div class="row bg-light">
+  <div class="row-label">Brand light · #F5F5F7</div>
+  <div class="overview" id="overview-light"></div>
+</div>
+
+<!-- 2. Size Scaling -->
+<h2>2 · Size scaling · 16 / 32 / 64 / 128 / 256 px</h2>
+<div class="row bg-light">
+  <div class="row-label">Light context</div>
+  <div class="scale-row" id="scale-light"></div>
+</div>
+<div class="row bg-dark">
+  <div class="row-label">Dark context</div>
+  <div class="scale-row" id="scale-dark"></div>
+</div>
+
+<!-- 3. Background Testing -->
+<h2>3 · Background testing</h2>
+<div class="bg-test">
+  <div class="cell bg-dark">
+    <span class="label">Brand dark · #1C1C1E</span>
+    <div class="row-of-marks" id="bg-test-dark"></div>
+  </div>
+  <div class="cell bg-white">
+    <span class="label">White · #FFFFFF</span>
+    <div class="row-of-marks" id="bg-test-white"></div>
+  </div>
+  <div class="cell bg-gray">
+    <span class="label">Mid gray · #808080</span>
+    <div class="row-of-marks" id="bg-test-gray"></div>
+  </div>
+</div>
+
+<!-- 4. Monochrome test -->
+<h2>4 · Monochrome · single-color (Finder template variant prep)</h2>
+<div class="mono-grid">
+  <div class="cell bg-dark">
+    <span class="label">Single white on dark</span>
+    <div class="row-of-marks" id="mono-white"></div>
+  </div>
+  <div class="cell bg-light">
+    <span class="label">Single black on light</span>
+    <div class="row-of-marks" id="mono-dark"></div>
+  </div>
+</div>
+
+<!-- 5. Favicon mock -->
+<h2>5 · Favicon · 14px in browser tab strip</h2>
+<div class="row" style="background:transparent;padding-left:0;padding-right:0">
+  <div class="browser-strip" id="favicon-tabs"></div>
+</div>
+
+<!-- 6. App icon mock -->
+<h2>6 · App icon · 112px rounded-rect (light + dark)</h2>
+<div class="row" style="background:transparent;padding-left:0;padding-right:0">
+  <div class="appicons" id="appicons-light"></div>
+  <div style="height:14px"></div>
+  <div class="appicons" id="appicons-dark"></div>
+</div>
+
+<div class="footer-notes">
+  <h3>How to read this</h3>
+  <ul>
+    <li><b>Section 4 (monochrome) is the binding gate.</b> The Finder toolbar template variant strips color — if a variant's cursor disappears here, the full-color version isn't useful in toolbar context.</li>
+    <li><b>Section 5 (favicon at 14px)</b> is the worst-case web context. Anything that becomes a featureless rectangle here will look broken on Twitter / browser tabs.</li>
+    <li><b>Variants:</b> <code>baseline</code> = thin I-beam line · <code>ibeam</code> = classic with serifs · <code>block</code> = terminal block · <code>bold</code> = thicker line · <code>lowleft</code> = repositioned</li>
+    <li>Pick a winner (or two for further iteration). If none survive section 4 cleanly, we go to fallback concept 10.</li>
+  </ul>
+</div>
+
+<script>
+  // Color SVG strings (cursor in #FF6B35, frame in currentColor).
+  // Mono SVG strings (cursor and frame both in currentColor — for template variant simulation).
+  const VARIANTS = [
+    { id: 'baseline', name: 'baseline · thin I-beam' },
+    { id: 'ibeam',    name: 'ibeam · with serifs' },
+    { id: 'block',    name: 'block · terminal-style' },
+    { id: 'bold',     name: 'bold · thicker line' },
+    { id: 'lowleft',  name: 'lowleft · low position' },
+  ];
+
+  const FRAME = `<mask id="__MID__"><rect width="64" height="64" fill="#000"/><rect x="12" y="10" width="40" height="44" rx="4" fill="#fff"/><rect x="16" y="14" width="32" height="36" rx="2" fill="#000"/></mask><rect width="64" height="64" fill="currentColor" mask="url(#__MID__)"/>`;
+
+  // cursor SVG fragments per variant (color version uses #FF6B35; mono uses currentColor)
+  const CURSORS = {
+    baseline: (fill) => `<rect x="20" y="18" width="2.5" height="9" fill="${fill}"/>`,
+    ibeam:    (fill) => `<g fill="${fill}"><rect x="20.25" y="18" width="2.5" height="9"/><rect x="18" y="18" width="7" height="1.5"/><rect x="18" y="25.5" width="7" height="1.5"/></g>`,
+    block:    (fill) => `<rect x="19" y="18" width="6" height="9" rx="0.5" fill="${fill}"/>`,
+    bold:     (fill) => `<rect x="19.75" y="17" width="3.5" height="11" rx="0.5" fill="${fill}"/>`,
+    lowleft:  (fill) => `<rect x="20" y="37" width="2.5" height="9" fill="${fill}"/>`,
+  };
+
+  let _maskCounter = 0;
+  function svgFor(id, mono) {
+    const mid = `m_${id}_${_maskCounter++}`;
+    const cursorFill = mono ? 'currentColor' : '#FF6B35';
+    const frame = FRAME.replaceAll('__MID__', mid);
+    const cursor = CURSORS[id](cursorFill);
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${frame}${cursor}</svg>`;
+  }
+
+  function host(svgStr, sizeClass) {
+    const span = document.createElement('span');
+    span.className = 'svg-host ' + sizeClass;
+    span.innerHTML = svgStr;
+    const svg = span.querySelector('svg');
+    if (svg) svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    return span;
+  }
+
+  /* 1. Overview */
+  function overview(parentId) {
+    const parent = document.getElementById(parentId);
+    for (const v of VARIANTS) {
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.appendChild(host(svgFor(v.id, false), 's80'));
+      const name = document.createElement('span');
+      name.className = 'name';
+      name.textContent = v.name;
+      item.appendChild(name);
+      parent.appendChild(item);
+    }
+  }
+
+  /* 2. Size scaling */
+  function scale(parentId) {
+    const parent = document.getElementById(parentId);
+    for (const v of VARIANTS) {
+      const col = document.createElement('div');
+      col.className = 'scale-col';
+      const sizes = document.createElement('div');
+      sizes.className = 'scale-sizes';
+      for (const [s, lbl] of [['s16','16'], ['s32','32'], ['s64','64'], ['s128','128'], ['s256','256']]) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.appendChild(host(svgFor(v.id, false), s));
+        const t = document.createElement('span');
+        t.textContent = lbl;
+        cell.appendChild(t);
+        sizes.appendChild(cell);
+      }
+      col.appendChild(sizes);
+      const lab = document.createElement('span');
+      lab.className = 'label';
+      lab.textContent = v.id;
+      col.appendChild(lab);
+      parent.appendChild(col);
+    }
+  }
+
+  /* 3. Background testing */
+  function bgTest(parentId, mono) {
+    const parent = document.getElementById(parentId);
+    for (const v of VARIANTS) {
+      parent.appendChild(host(svgFor(v.id, mono), 's64'));
+    }
+  }
+
+  /* 4. Monochrome */
+  function mono(parentId) {
+    const parent = document.getElementById(parentId);
+    for (const v of VARIANTS) {
+      parent.appendChild(host(svgFor(v.id, true), 's64'));
+    }
+  }
+
+  /* 5. Favicon mock — render at 14px inside tabs */
+  function faviconTabs() {
+    const parent = document.getElementById('favicon-tabs');
+    for (let i = 0; i < VARIANTS.length; i++) {
+      const v = VARIANTS[i];
+      const tab = document.createElement('span');
+      tab.className = 'tab' + (i === 0 ? ' active' : '');
+      const fav = host(svgFor(v.id, false), '');
+      fav.classList.add('favicon');
+      fav.style.width = '14px';
+      fav.style.height = '14px';
+      tab.appendChild(fav);
+      const title = document.createElement('span');
+      title.className = 'title';
+      title.textContent = `NewFile · ${v.id}`;
+      tab.appendChild(title);
+      parent.appendChild(tab);
+    }
+  }
+
+  /* 6. App icon mock */
+  function appIcons(parentId, isDark) {
+    const parent = document.getElementById(parentId);
+    for (const v of VARIANTS) {
+      const cell = document.createElement('div');
+      cell.className = 'appicon-cell';
+      const frame = document.createElement('div');
+      frame.className = 'app-icon-frame ' + (isDark ? 'app-icon-dark' : 'app-icon-light');
+      const svg = host(svgFor(v.id, false), 's80');
+      frame.appendChild(svg);
+      cell.appendChild(frame);
+      const n = document.createElement('span');
+      n.className = 'name';
+      n.textContent = v.id;
+      cell.appendChild(n);
+      parent.appendChild(cell);
+    }
+  }
+
+  overview('overview-dark');
+  overview('overview-light');
+  scale('scale-light');
+  scale('scale-dark');
+  bgTest('bg-test-dark', false);
+  bgTest('bg-test-white', false);
+  bgTest('bg-test-gray', false);
+  mono('mono-white');
+  mono('mono-dark');
+  faviconTabs();
+  appIcons('appicons-light', false);
+  appIcons('appicons-dark', true);
+</script>
+
+</body>
+</html>

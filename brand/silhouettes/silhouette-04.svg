@@ -1,0 +1,11 @@
+<!-- Direction (a): filled rect with single centered text-cursor I-beam — "blinking cursor, fresh file" -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <mask id="m">
+    <rect width="64" height="64" fill="#000"/>
+    <rect x="14" y="8" width="36" height="48" rx="4" fill="#fff"/>
+    <rect x="30.75" y="22" width="2.5" height="20" fill="#000"/>
+    <rect x="28" y="22" width="8" height="2" fill="#000"/>
+    <rect x="28" y="40" width="8" height="2" fill="#000"/>
+  </mask>
+  <rect width="64" height="64" fill="currentColor" mask="url(#m)"/>
+</svg>

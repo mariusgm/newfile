@@ -1,0 +1,10 @@
+<!-- Direction (a): filled rect with two text-line cuts near top — "blank document, ready" -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <mask id="m">
+    <rect width="64" height="64" fill="#000"/>
+    <rect x="14" y="8" width="36" height="48" rx="4" fill="#fff"/>
+    <rect x="20" y="20" width="24" height="2.5" rx="1" fill="#000"/>
+    <rect x="20" y="28" width="18" height="2.5" rx="1" fill="#000"/>
+  </mask>
+  <rect width="64" height="64" fill="currentColor" mask="url(#m)"/>
+</svg>

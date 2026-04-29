@@ -1,0 +1,29 @@
+# Xcode
+build/
+DerivedData/
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+
+# macOS
+.DS_Store
+
+# Swift
+.build/
+Packages/
+Package.resolved
+*.xcarchive
+
+# Generated artifacts
+*.dmg
+*.zip
+NewFile.app
+
+# Editors
+.vscode/
+.idea/
+
+# Notes
+NOTES.local.md

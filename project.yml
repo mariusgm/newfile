@@ -1,0 +1,65 @@
+name: NewFile
+options:
+  bundleIdPrefix: dev.newfile
+  deploymentTarget:
+    macOS: "13.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_IDENTITY: "-"
+    ENABLE_HARDENED_RUNTIME: YES
+
+targets:
+  NewFile:
+    type: application
+    platform: macOS
+    sources:
+      - path: App
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleName: NewFile
+        CFBundleDisplayName: NewFile
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
+        LSApplicationCategoryType: public.app-category.utilities
+        LSUIElement: false
+        NSHumanReadableCopyright: "Copyright © 2026 mariusgm. MIT licensed."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.newfile.NewFile
+        CODE_SIGN_ENTITLEMENTS: App/NewFile.entitlements
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 mariusgm. MIT licensed."
+    dependencies:
+      - target: NewFileExtension
+        embed: true
+      - sdk: FinderSync.framework
+
+  NewFileExtension:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: Extension
+    info:
+      path: Extension/Info.plist
+      properties:
+        CFBundleName: NewFileExtension
+        CFBundleDisplayName: NewFile Extension
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.FinderSync
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).FinderSync
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.newfile.NewFile.NewFileExtension
+        CODE_SIGN_ENTITLEMENTS: Extension/NewFileExtension.entitlements

@@ -1,0 +1,9 @@
+<!-- Direction (c): N negative-space, edge-spanning — verticals near the rect edges, diagonal corner-to-corner -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <mask id="m">
+    <rect width="64" height="64" fill="#000"/>
+    <rect x="8" y="8" width="48" height="48" rx="6" fill="#fff"/>
+    <path d="M18 16 V48 M46 16 V48 M18 16 L46 48" stroke="#000" stroke-width="3.5" fill="none" stroke-linejoin="miter"/>
+  </mask>
+  <rect width="64" height="64" fill="currentColor" mask="url(#m)"/>
+</svg>

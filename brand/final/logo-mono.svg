@@ -1,0 +1,11 @@
+<!-- NewFile · monochrome single-color (uses currentColor) · for Finder toolbar template, watermarks, single-ink print -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="currentColor">
+  <mask id="frame">
+    <rect width="64" height="64" fill="#fff"/>
+    <rect x="16" y="14" width="32" height="36" rx="2" fill="#000"/>
+  </mask>
+  <rect x="12" y="10" width="40" height="44" rx="4" mask="url(#frame)"/>
+  <rect x="20.25" y="18" width="2.5" height="9"/>
+  <rect x="18" y="18" width="7" height="1.5"/>
+  <rect x="18" y="25.5" width="7" height="1.5"/>
+</svg>

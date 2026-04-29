@@ -1,0 +1,9 @@
+<!-- Direction (c): N negative-space, balanced proportions — canvas IS the letterform -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <mask id="m">
+    <rect width="64" height="64" fill="#000"/>
+    <rect x="10" y="10" width="44" height="44" rx="4" fill="#fff"/>
+    <path d="M22 20 V44 M42 20 V44 M22 20 L42 44" stroke="#000" stroke-width="4" fill="none" stroke-linejoin="miter"/>
+  </mask>
+  <rect width="64" height="64" fill="currentColor" mask="url(#m)"/>
+</svg>

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NewFile — Step 2a Silhouette Sanity Check</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 13px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    background: #FAFAFA;
+    color: #111;
+    padding: 32px 40px 80px;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h2 { font-size: 13px; font-weight: 600; margin: 32px 0 12px; text-transform: uppercase; letter-spacing: 0.06em; color: #555; }
+  .subtitle { color: #666; margin: 0 0 24px; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 0 0 16px; font-size: 12px; color: #555; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.15); }
+
+  /* Backgrounds for the test rows */
+  .bg-toolbar-light { background: #F5F5F7; color: #111; }
+  .bg-toolbar-dark  { background: #2C2C2E; color: #FAFAFA; }
+  .bg-white         { background: #FFFFFF; color: #111; }
+  .bg-black         { background: #000000; color: #FAFAFA; }
+
+  /* Concept grid: rows = backgrounds, columns = concepts at three sizes */
+  .row {
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin: 0 0 12px;
+    overflow-x: auto;
+  }
+  .row-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7; margin: 0 0 12px; }
+  .concept-row { display: flex; gap: 18px; align-items: flex-end; }
+  .concept {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    flex: 0 0 auto;
+  }
+  .concept .num { font-size: 10px; opacity: 0.55; font-variant-numeric: tabular-nums; }
+  .sizes { display: flex; gap: 10px; align-items: flex-end; }
+  .sizes .swatch-cell {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 9px; opacity: 0.55;
+  }
+
+  /* Reference (64px) row — for context */
+  .ref-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .ref-cell {
+    width: 96px; height: 96px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 4px;
+    font-size: 10px;
+  }
+  .ref-cell .num { opacity: 0.55; }
+
+  /* App-icon mock */
+  .app-icon-grid { display: flex; gap: 18px; flex-wrap: wrap; }
+  .app-icon {
+    width: 96px; height: 96px;
+    background: #FAFAFA;
+    border-radius: 22px;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    display: flex; align-items: center; justify-content: center;
+    color: #111;
+  }
+  .app-icon-dark {
+    background: #1C1C1E; color: #FAFAFA;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* Toolbar mock */
+  .toolbar {
+    display: flex; align-items: center; gap: 4px;
+    background: linear-gradient(#FBFBFB, #ECECEC);
+    border: 1px solid #D5D5D7;
+    padding: 8px 10px;
+    border-radius: 10px;
+    color: #1d1d1f;
+  }
+  .toolbar-dark {
+    background: linear-gradient(#3A3A3C, #2C2C2E);
+    border: 1px solid #1C1C1E;
+    color: #F5F5F7;
+  }
+  .tb-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 22px;
+    border-radius: 5px;
+    opacity: 0.85;
+  }
+  .tb-btn:hover { opacity: 1; background: rgba(0,0,0,0.06); }
+  .toolbar-dark .tb-btn:hover { background: rgba(255,255,255,0.08); }
+
+  /* SVG sizing utility — fed by CSS color */
+  .s16 { width: 16px; height: 16px; }
+  .s24 { width: 24px; height: 24px; }
+  .s32 { width: 32px; height: 32px; }
+  .s64 { width: 64px; height: 64px; }
+  .s96 { width: 96px; height: 96px; }
+  svg { display: block; }
+
+  .notes {
+    margin-top: 32px;
+    padding: 18px 20px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 10px;
+    line-height: 1.55;
+  }
+  .notes h3 { margin: 0 0 8px; font-size: 13px; }
+  .notes ul { margin: 0; padding-left: 18px; }
+  .notes li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<h1>NewFile — Step 2a silhouette sanity check</h1>
+<p class="subtitle">Monochrome silhouettes only. Pass = identity readable at 16px on all three backgrounds. Fail = discard, do not try to fix.</p>
+
+<div class="legend">
+  <span><span class="swatch" style="background:#F5F5F7"></span> Toolbar light <code>#F5F5F7</code></span>
+  <span><span class="swatch" style="background:#2C2C2E"></span> Toolbar dark <code>#2C2C2E</code></span>
+  <span><span class="swatch" style="background:#FFF;border:1px solid #ddd"></span> Pure white <code>#FFFFFF</code></span>
+  <span><span class="swatch" style="background:#000"></span> Pure black <code>#000000</code></span>
+</div>
+
+<!-- Reference row: large (96px) renders on dark + light, for context -->
+<h2>Reference — 96 px (context)</h2>
+<div class="row bg-toolbar-light">
+  <div class="row-label">Toolbar light · #F5F5F7</div>
+  <div class="ref-row" id="ref-light"></div>
+</div>
+<div class="row bg-toolbar-dark">
+  <div class="row-label">Toolbar dark · #2C2C2E</div>
+  <div class="ref-row" id="ref-dark"></div>
+</div>
+
+<!-- The test grids — small sizes on each of four backgrounds -->
+<h2>Sanity check — 16 / 24 / 32 px</h2>
+
+<div class="row bg-toolbar-light">
+  <div class="row-label">Toolbar light · #F5F5F7</div>
+  <div class="concept-row" id="grid-toolbar-light"></div>
+</div>
+<div class="row bg-toolbar-dark">
+  <div class="row-label">Toolbar dark · #2C2C2E</div>
+  <div class="concept-row" id="grid-toolbar-dark"></div>
+</div>
+<div class="row bg-white">
+  <div class="row-label">Pure white · #FFFFFF</div>
+  <div class="concept-row" id="grid-white"></div>
+</div>
+<div class="row bg-black">
+  <div class="row-label">Pure black · #000000</div>
+  <div class="concept-row" id="grid-black"></div>
+</div>
+
+<!-- App-icon simulation (rounded-rect frame) -->
+<h2>App icon mock — 96 px in rounded-rect frame</h2>
+<div class="row" style="background:transparent;padding-left:0;padding-right:0">
+  <div class="app-icon-grid" id="appicon-light"></div>
+  <div style="height:14px"></div>
+  <div class="app-icon-grid" id="appicon-dark"></div>
+</div>
+
+<!-- Finder toolbar mock -->
+<h2>Finder toolbar mock — 16 px in chrome</h2>
+<div class="row" style="background:transparent;padding-left:0;padding-right:0">
+  <div class="toolbar" id="toolbar-light" style="display:inline-flex"></div>
+  <div style="height:10px"></div>
+  <div class="toolbar toolbar-dark" id="toolbar-dark" style="display:inline-flex"></div>
+</div>
+
+<div class="notes">
+  <h3>Reading this page</h3>
+  <ul>
+    <li><b>16px is the binding test.</b> If a concept's identity isn't readable at 16px on all four backgrounds, it fails. No "fixing" — discard.</li>
+    <li><b>Pure white</b> catches concepts that rely on light fill values.</li>
+    <li><b>Pure black</b> catches concepts that rely on internal cutouts that vanish in dark mode.</li>
+    <li><b>Toolbar gray (light + dark)</b> is the actual Finder context.</li>
+    <li>Concepts 01–04 are direction (a) — rect + subtle detail. Concept 05 is direction (b) — off-square. Concept 06 is the control (frame only). Concepts 07–10 are direction (c) — negative-space N.</li>
+  </ul>
+</div>
+
+<script>
+  // Silhouettes inlined so this page works opened directly via file:// (no server needed).
+  // The on-disk SVGs in ./silhouettes/ are the canonical artifacts; these strings are kept in sync.
+  const SVGS = {
+    '01': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><mask id="m01"><rect width="64" height="64" fill="#000"/><rect x="12" y="10" width="40" height="44" rx="4" fill="#fff"/><rect x="16" y="14" width="32" height="36" rx="2" fill="#000"/><rect x="20" y="18" width="2.5" height="9" fill="#fff"/></mask><rect width="64" height="64" fill="currentColor" mask="url(#m01)"/></svg>`,
+    '02': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><mask id="m02"><rect width="64" height="64" fill="#000"/><rect x="14" y="8" width="36" height="48" rx="4" fill="#fff"/><rect x="20" y="20" width="24" height="2.5" rx="1" fill="#000"/><rect x="20" y="28" width="18" height="2.5" rx="1" fill="#000"/></mask><rect width="64" height="64" fill="currentColor" mask="url(#m02)"/></svg>`,
+    '03': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><mask id="m03"><rect width="64" height="64" fill="#000"/><rect x="14" y="10" width="36" height="44" rx="4" fill="#fff"/><rect x="38" y="16" width="3" height="11" rx="1" fill="#000"/><rect x="34" y="20" width="11" height="3" rx="1" fill="#000"/></mask><rect width="64" height="64" fill="currentColor" mask="url(#m03)"/></svg>`,
+    '04': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><mask id="m04"><rect width="64" height="64" fill="#000"/><rect x="14" y="8" width="36" height="48" rx="4" fill="#fff"/><rect x="30.75" y="22" width="2.5" height="20" fill="#000"/><rect x="28" y="22" width="8" height="2" fill="#000"/><rect x="28" y="40" width="8" height="2" fill="#000"/></mask><rect width="64" height="64" fill="currentColor" mask="url(#m04)"/></svg>`,
+    '05': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g transform="rotate(-4 32 32)"><rect x="14" y="10" width="36" height="44" rx="4" fill="currentColor"/></g></svg>`,
+    '06': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><mask id="m06"><rect width="64" height="64" fill="#000"/><rect x="12" y="10" width="40" height="44" rx="4" fill="#fff"/><rect x="16" y="14" width="32" height="36" rx="2" fill="#000"/></mask><rect width="64" height="64" fill="currentColor" mask="url(#m06)"/></svg>`,
+    '07': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><mask id="m07"><rect width="64" height="64" fill="#000"/><rect x="10" y="10" width="44" height="44" rx="4" fill="#fff"/><path d="M22 20 V44 M42 20 V44 M22 20 L42 44" stroke="#000" stroke-width="4" fill="none" stroke-linejoin="miter"/></mask><rect width="64" height="64" fill="currentColor" mask="url(#m07)"/></svg>`,
+    '08': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><mask id="m08"><rect width="64" height="64" fill="#000"/><rect x="8" y="8" width="48" height="48" rx="6" fill="#fff"/><path d="M20 18 V46 M44 18 V46 M20 18 L44 46" stroke="#000" stroke-width="6" fill="none" stroke-linejoin="miter"/></mask><rect width="64" height="64" fill="currentColor" mask="url(#m08)"/></svg>`,
+    '09': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><mask id="m09"><rect width="64" height="64" fill="#000"/><rect x="8" y="8" width="48" height="48" rx="6" fill="#fff"/><path d="M18 16 V48 M46 16 V48 M18 16 L46 48" stroke="#000" stroke-width="3.5" fill="none" stroke-linejoin="miter"/></mask><rect width="64" height="64" fill="currentColor" mask="url(#m09)"/></svg>`,
+    '10': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><mask id="m10"><rect width="64" height="64" fill="#000"/><rect x="10" y="10" width="44" height="44" rx="4" fill="#fff"/><path d="M24 20 V44 M40 20 V44 M24 20 L40 44" stroke="#000" stroke-width="3" fill="none" stroke-linejoin="miter"/></mask><rect width="64" height="64" fill="currentColor" mask="url(#m10)"/></svg>`,
+  };
+
+  const concepts = Object.keys(SVGS);
+
+  function inlineSvg(num, sizeClass) {
+    const span = document.createElement('span');
+    span.className = sizeClass;
+    span.style.display = 'inline-block';
+    span.style.lineHeight = '0';
+    span.innerHTML = SVGS[num] || '?';
+    const svg = span.querySelector('svg');
+    if (svg) {
+      svg.removeAttribute('width');
+      svg.removeAttribute('height');
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      svg.style.width = '100%';
+      svg.style.height = '100%';
+    }
+    return span;
+  }
+
+  function buildSizeGroup(num) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'concept';
+    const sizes = document.createElement('div');
+    sizes.className = 'sizes';
+    for (const [s, label] of [['s16','16'], ['s24','24'], ['s32','32']]) {
+      const cell = document.createElement('div');
+      cell.className = 'swatch-cell';
+      cell.appendChild(inlineSvg(num, s));
+      const lbl = document.createElement('span');
+      lbl.textContent = label;
+      cell.appendChild(lbl);
+      sizes.appendChild(cell);
+    }
+    wrapper.appendChild(sizes);
+    const num_lbl = document.createElement('span');
+    num_lbl.className = 'num';
+    num_lbl.textContent = num;
+    wrapper.appendChild(num_lbl);
+    return wrapper;
+  }
+
+  function buildRefGroup(num, isDark) {
+    const cell = document.createElement('div');
+    cell.className = 'ref-cell';
+    cell.style.background = isDark ? '#2C2C2E' : '#F5F5F7';
+    cell.style.color = isDark ? '#FAFAFA' : '#111';
+    const svgWrap = inlineSvg(num, 's96');
+    svgWrap.style.width = '64px';
+    svgWrap.style.height = '64px';
+    cell.appendChild(svgWrap);
+    const lbl = document.createElement('span');
+    lbl.className = 'num';
+    lbl.textContent = num;
+    cell.appendChild(lbl);
+    return cell;
+  }
+
+  function buildAppIcon(num, isDark) {
+    const cell = document.createElement('div');
+    cell.className = 'app-icon' + (isDark ? ' app-icon-dark' : '');
+    const svgWrap = inlineSvg(num, 's64');
+    svgWrap.style.width = '64px';
+    svgWrap.style.height = '64px';
+    cell.appendChild(svgWrap);
+    return cell;
+  }
+
+  function buildToolbarBtn(num) {
+    const btn = document.createElement('span');
+    btn.className = 'tb-btn';
+    const svgWrap = inlineSvg(num, 's16');
+    svgWrap.style.width = '16px';
+    svgWrap.style.height = '16px';
+    btn.appendChild(svgWrap);
+    return btn;
+  }
+
+  (() => {
+    const refLight = document.getElementById('ref-light');
+    const refDark = document.getElementById('ref-dark');
+    const gTL = document.getElementById('grid-toolbar-light');
+    const gTD = document.getElementById('grid-toolbar-dark');
+    const gW = document.getElementById('grid-white');
+    const gB = document.getElementById('grid-black');
+    const appLight = document.getElementById('appicon-light');
+    const appDark = document.getElementById('appicon-dark');
+    const tbLight = document.getElementById('toolbar-light');
+    const tbDark = document.getElementById('toolbar-dark');
+
+    for (const num of concepts) {
+      refLight.appendChild(buildRefGroup(num, false));
+      refDark.appendChild(buildRefGroup(num, true));
+      gTL.appendChild(buildSizeGroup(num));
+      gTD.appendChild(buildSizeGroup(num));
+      gW.appendChild(buildSizeGroup(num));
+      gB.appendChild(buildSizeGroup(num));
+      appLight.appendChild(buildAppIcon(num, false));
+      appDark.appendChild(buildAppIcon(num, true));
+      tbLight.appendChild(buildToolbarBtn(num));
+      tbDark.appendChild(buildToolbarBtn(num));
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+<!-- Direction (b): filled rect rotated 4° — "just dropped / just made" -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <g transform="rotate(-4 32 32)">
+    <rect x="14" y="10" width="36" height="44" rx="4" fill="currentColor"/>
+  </g>
+</svg>

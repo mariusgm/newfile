@@ -1,0 +1,9 @@
+<!-- Direction (c): N negative-space, bold strokes — heavier letterform, more presence at small sizes -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <mask id="m">
+    <rect width="64" height="64" fill="#000"/>
+    <rect x="8" y="8" width="48" height="48" rx="6" fill="#fff"/>
+    <path d="M20 18 V46 M44 18 V46 M20 18 L44 46" stroke="#000" stroke-width="6" fill="none" stroke-linejoin="miter"/>
+  </mask>
+  <rect width="64" height="64" fill="currentColor" mask="url(#m)"/>
+</svg>
