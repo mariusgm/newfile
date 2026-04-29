@@ -1,16 +1,19 @@
-<!-- NewFile · macOS app icon · 1024×1024 squircle plate + mark at 70% scale, centered -->
+<!-- NewFile · macOS app icon · 1024×1024 squircle plate + mark scaled 1.30× from prior master.
+     Mark width 585 ≈ 57% of canvas (≈70% of usable area inside the squircle's 8% padding).
+     I-beam preserves its proportional placement (upper-left of page interior). -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
   <!-- Squircle background plate -->
-  <rect width="1024" height="1024" rx="200" fill="#FAFAFA"/>
-  <!-- Mark scaled 11.25× from 64-viewBox into a 720×720 area, centered at (152, 152) -->
+  <rect width="1024" height="1024" rx="200" fill="#FAF7F2"/>
+  <!-- Page mark: outer 585×643.5 (rx 58.5) with inner cutout 468×526.5 (rx 29.25), centered -->
   <mask id="frame">
     <rect width="1024" height="1024" fill="#fff"/>
-    <rect x="332" y="309.5" width="360" height="405" rx="22.5" fill="#000"/>
+    <rect x="278" y="248.75" width="468" height="526.5" rx="29.25" fill="#000"/>
   </mask>
-  <rect x="287" y="264.5" width="450" height="495" rx="45" fill="#111111" mask="url(#frame)"/>
+  <rect x="219.5" y="190.25" width="585" height="643.5" rx="58.5" fill="#1A1410" mask="url(#frame)"/>
+  <!-- I-beam cursor (upper-left of inner page area), 1.30× of prior dimensions -->
   <g fill="#FF6B35">
-    <rect x="379.8125" y="354.5" width="28.125" height="101.25"/>
-    <rect x="354.5" y="354.5" width="78.75" height="16.875"/>
-    <rect x="354.5" y="438.875" width="78.75" height="16.875"/>
+    <rect x="340.15625" y="307.25" width="36.5625" height="131.625"/>
+    <rect x="307.25" y="307.25" width="102.375" height="21.9375"/>
+    <rect x="307.25" y="416.9375" width="102.375" height="21.9375"/>
   </g>
 </svg>
