@@ -18,7 +18,9 @@ final class SetupStatus: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.markUsed()
+            MainActor.assumeIsolated {
+                self?.markUsed()
+            }
         }
     }
 
