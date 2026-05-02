@@ -165,3 +165,24 @@ a:hover { text-decoration-color: var(--accent); }
   border-radius: 8px;
   display: block;
 }
+
+/* ---------- features ---------- */
+.feature-list { list-style: none; padding: 0; margin: 0; }
+.feature-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 10px 0;
+  color: var(--text-mute);
+  font-size: 16px;
+}
+.feature-list strong { color: var(--text); font-weight: 500; }
+
+.feature-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-top: 9px;
+  flex: 0 0 8px;
+}
