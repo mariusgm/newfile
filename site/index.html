@@ -38,6 +38,26 @@
         <li><span class="feature-dot" aria-hidden="true"></span>Auto-incrementing names, reveals the new file selected.</li>
       </ul>
     </section>
+
+    <section class="faq">
+      <h2>FAQ</h2>
+      <dl class="faq-list">
+        <dt>How do I create a new text file in macOS Finder?</dt>
+        <dd>Install NewFile, enable its Finder extension once, then right-click in any Finder window and choose &lsquo;New Text File&rsquo;. The file appears in that folder, named <code>New Text File.txt</code>, auto-incremented if one already exists.</dd>
+
+        <dt>Why doesn&rsquo;t macOS have a &lsquo;New File&rsquo; option built in?</dt>
+        <dd>Apple has never shipped one — users have requested it since the early OS X era. NewFile is a small <a href="https://developer.apple.com/documentation/findersync/fifindersync">Finder Sync Extension</a> that adds the missing option without modifying the system.</dd>
+
+        <dt>Does NewFile work on macOS Sequoia, Sonoma, and Ventura?</dt>
+        <dd>Yes — NewFile supports macOS 13 (Ventura) and later, including Sonoma (14) and Sequoia (15). On Sequoia 15.0–15.1 the System Settings Extensions UI was buggy; update to 15.2 or later if the NewFile Extension toggle does not appear.</dd>
+
+        <dt>Is NewFile free? Does it collect any data?</dt>
+        <dd>NewFile is free, open source, and collects nothing — no analytics, no telemetry, no network requests. The source is on GitHub at <a href="https://github.com/mariusgm/newfile">github.com/mariusgm/newfile</a>.</dd>
+
+        <dt>Can I uninstall it cleanly?</dt>
+        <dd>Yes — drag <code>NewFile.app</code> from <code>/Applications</code> to the Trash. The Finder extension toggle disappears automatically; nothing is left behind.</dd>
+      </dl>
+    </section>
   </main>
   <script>
     document.querySelectorAll('.copy-btn').forEach(btn => {

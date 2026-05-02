@@ -186,3 +186,28 @@ a:hover { text-decoration-color: var(--accent); }
   margin-top: 9px;
   flex: 0 0 8px;
 }
+
+/* ---------- faq ---------- */
+.faq h2 { color: var(--text-mute); }
+
+.faq-list { margin: 0; padding: 0; }
+.faq-list dt {
+  color: var(--text);
+  font-weight: 500;
+  font-size: 15px;
+  margin: 24px 0 6px;
+}
+.faq-list dt:first-of-type { margin-top: 0; }
+.faq-list dd {
+  margin: 0 0 0 0;
+  color: var(--text-mute);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.faq-list dd code {
+  font-size: 13px;
+  background: var(--surface);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--text);
+}
