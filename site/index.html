@@ -32,20 +32,71 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "NewFile",
-    "applicationCategory": "UtilityApplication",
-    "operatingSystem": "macOS 13.0",
-    "softwareVersion": "0.1.0",
-    "url": "https://newfile.dev/",
-    "downloadUrl": "https://github.com/mariusgm/newfile/releases/latest/download/NewFile.dmg",
-    "sameAs": "https://github.com/mariusgm/newfile",
-    "license": "https://opensource.org/licenses/MIT",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    }
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "NewFile",
+        "description": "A free, open-source macOS Finder Sync Extension that adds a 'New Text File' option to the right-click menu and toolbar.",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "macOS 13.0",
+        "softwareVersion": "0.1.0",
+        "url": "https://newfile.dev/",
+        "image": "https://newfile.dev/assets/og.png",
+        "downloadUrl": "https://github.com/mariusgm/newfile/releases/latest/download/NewFile.dmg",
+        "sameAs": "https://github.com/mariusgm/newfile",
+        "license": "https://opensource.org/licenses/MIT",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do I create a new text file in macOS Finder?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Install NewFile, enable its Finder extension once, then right-click in any Finder window and choose 'New Text File'. The file appears in that folder, named 'New Text File.txt', auto-incremented if one already exists."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why doesn't macOS have a 'New File' option built in?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Apple has never shipped one — users have requested it since the early OS X era. NewFile is a small Finder Sync Extension that adds the missing option without modifying the system."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does NewFile work on macOS Sequoia, Sonoma, and Ventura?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — NewFile supports macOS 13 (Ventura) and later, including Sonoma (14) and Sequoia (15). On Sequoia 15.0–15.1 the System Settings Extensions UI was buggy; update to 15.2 or later if the NewFile Extension toggle does not appear."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is NewFile free? Does it collect any data?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "NewFile is free, open source, and collects nothing — no analytics, no telemetry, no network requests. The source is on GitHub at github.com/mariusgm/newfile."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I uninstall NewFile cleanly?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — drag NewFile.app from /Applications to the Trash. The Finder extension toggle disappears automatically; nothing is left behind."
+            }
+          }
+        ]
+      }
+    ]
   }
   </script>
 </head>
