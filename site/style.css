@@ -222,3 +222,28 @@ a:hover { text-decoration-color: var(--accent); }
   border: 1px solid var(--border);
   border-radius: 8px;
 }
+
+/* ---------- privacy ---------- */
+.privacy p {
+  font-size: 14px;
+  color: var(--text-dim);
+  text-align: center;
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ---------- footer ---------- */
+.site-footer {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.site-footer a { color: var(--text-dim); text-decoration: none; }
+.site-footer a:hover { color: var(--accent); }
+.site-footer span { color: var(--border); }
