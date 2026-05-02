@@ -213,18 +213,9 @@ a:hover { text-decoration-color: var(--accent); }
 }
 
 /* ---------- enable ---------- */
-.enable-steps { padding-left: 22px; margin: 0 0 24px; color: var(--text-mute); font-size: 15px; }
+.enable-steps { padding-left: 22px; margin: 0; color: var(--text-mute); font-size: 15px; }
 .enable-steps li { margin: 0 0 10px; }
 .enable-steps strong { color: var(--text); font-weight: 500; }
-
-.enable-img {
-  display: block;
-  max-width: 469px;
-  width: 100%;
-  margin: 0 auto;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
 
 /* ---------- privacy ---------- */
 .privacy p {
