@@ -1,0 +1,25 @@
+# newfile.dev — explicit allow-all, including LLM crawlers.
+# Default-allow + explicit allow is the same outcome but states intent.
+
+User-agent: *
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://newfile.dev/sitemap.xml

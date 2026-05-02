@@ -1,0 +1,41 @@
+# NewFile
+
+> NewFile is a free, open-source macOS Finder Sync Extension that adds a "New Text File" option to the Finder right-click menu and toolbar. macOS has never shipped this functionality natively; NewFile fills the gap with a small, native, signed, notarized binary that runs as a Finder extension.
+
+## What it does
+
+- Adds **New Text File** to the Finder right-click menu in folders where the extension is enabled.
+- Adds a **NewFile** toolbar button (drag-to-customize from `View → Customize Toolbar…`).
+- Creates `New Text File.txt` (or `New Text File 2.txt`, `New Text File 3.txt`, …) in the active folder.
+- Reveals and selects the newly created file so you can rename it immediately.
+
+## Who it's for
+
+- macOS users who came from Windows or Linux and miss the right-click → New File workflow.
+- Developers and writers who frequently create scratch / config / prompt files.
+- Anyone tired of opening TextEdit just to make an empty `.txt`.
+
+## Install
+
+- Homebrew: `brew install --cask newfile`
+- Manual: download `NewFile.dmg` from <https://github.com/mariusgm/newfile/releases/latest>
+
+## System requirements
+
+- macOS 13 (Ventura) or later. Universal binary (Apple Silicon + Intel).
+- On macOS Sequoia 15.0–15.1, the System Settings Extensions UI is buggy; update to 15.2 or later if the toggle doesn't appear.
+
+## Privacy
+
+NewFile collects nothing, sends nothing, contacts no servers, and has no analytics. The website (newfile.dev) is the same — no cookies, no trackers, no third-party fonts.
+
+## Licensing and source
+
+- License: MIT
+- Source code: <https://github.com/mariusgm/newfile>
+- Releases: <https://github.com/mariusgm/newfile/releases>
+- Latest version: v0.1.0 (signed with Developer ID, notarized by Apple, stapled)
+
+## Contact
+
+The project is maintained by Marius Garberg Mevold. Issues and PRs welcome at the GitHub repository above.
