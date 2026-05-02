@@ -77,3 +77,32 @@ a {
 }
 
 a:hover { text-decoration-color: var(--accent); }
+
+/* ---------- hero ---------- */
+.hero { text-align: center; padding-top: 0; }
+
+.hero-icon {
+  width: 280px;
+  height: 280px;
+  margin: 0 auto 32px;
+}
+
+.hero-tagline {
+  color: var(--text-mute);
+  font-size: 20px;
+  margin: 0 0 8px;
+}
+
+.hero-sub {
+  color: var(--text-dim);
+  font-size: 15px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+  .hero-icon { width: 200px; height: 200px; margin-bottom: 24px; }
+  h1 { font-size: 36px; }
+  .hero-tagline { font-size: 18px; }
+  .hero-sub { font-size: 14px; }
+}
