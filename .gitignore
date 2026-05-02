@@ -20,6 +20,8 @@ Package.resolved
 *.dmg
 *.zip
 NewFile.app
+release/build/
+release/export/
 
 # Editors
 .vscode/
