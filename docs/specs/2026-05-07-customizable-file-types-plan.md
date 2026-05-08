@@ -135,15 +135,15 @@ with:
     sources:
       - path: Tests
       - path: Shared
-    dependencies:
-      - target: NewFile
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.newfile.NewFile.NewFileTests
-        BUNDLE_LOADER: $(TEST_HOST)
-        TEST_HOST: $(BUILT_PRODUCTS_DIR)/NewFile.app/Contents/MacOS/NewFile
         GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGNING_ALLOWED: NO
 ```
+
+The test target is intentionally **standalone and unsigned**: no `TEST_HOST`, no `BUNDLE_LOADER`, no `dependencies` on the host app. `Shared/` is compiled directly into the test bundle, so test files reference types like `FileTypeEntry` and `SettingsStore` without `@testable import NewFile`. Trade-off: tests cannot reach into private symbols of the `NewFile` app target (we don't need to — every type under test lives in `Shared/`), and this target won't carry UI tests if we ever add them. Reason: the App Group entitlement on the host app would require AI-NODE-01 to be registered in team `Q7VD7MTRL8`'s device list, and `-allowProvisioningUpdates` cannot mint a Mac App Development profile for an unregistered device. Keeping the test target unsigned removes the dependency entirely.
 
 (d) The App Group entitlement requires a real Apple Development certificate — ad-hoc signing (`CODE_SIGN_IDENTITY: "-"`) cannot carry `application-groups`. Update the Debug config under `settings.configs`. Replace:
 
@@ -161,7 +161,7 @@ with:
       CODE_SIGN_IDENTITY: "Apple Development"
 ```
 
-The `DEVELOPMENT_TEAM: Q7VD7MTRL8` already in `settings.base` lets Xcode auto-provision a dev profile that includes the App Group.
+The `DEVELOPMENT_TEAM: Q7VD7MTRL8` already in `settings.base` lets Xcode auto-provision a dev profile for the host app and extension. (Note: AI-NODE-01 must be registered in team `Q7VD7MTRL8`'s device list for **build** runs of the host app to succeed via CLI — see Task 7's manual smoke step. Test runs do not require this.)
 
 - [ ] **Step 5: Write a smoke test**
 
@@ -218,7 +218,9 @@ Create `Tests/FilenameGeneratorTests.swift`:
 
 ```swift
 import XCTest
-@testable import NewFile
+// Shared/ source files are compiled directly into this test target,
+// so types like FileTypeEntry / SettingsStore are accessible without
+// @testable import NewFile (test target is standalone & unsigned).
 
 final class FilenameGeneratorTests: XCTestCase {
 
@@ -357,7 +359,9 @@ Create `Tests/FileTypeEntryTests.swift`:
 
 ```swift
 import XCTest
-@testable import NewFile
+// Shared/ source files are compiled directly into this test target,
+// so types like FileTypeEntry / SettingsStore are accessible without
+// @testable import NewFile (test target is standalone & unsigned).
 
 final class FileTypeEntryTests: XCTestCase {
 
@@ -509,7 +513,9 @@ Create `Tests/SeedPresetsTests.swift`:
 
 ```swift
 import XCTest
-@testable import NewFile
+// Shared/ source files are compiled directly into this test target,
+// so types like FileTypeEntry / SettingsStore are accessible without
+// @testable import NewFile (test target is standalone & unsigned).
 
 final class SeedPresetsTests: XCTestCase {
 
@@ -609,7 +615,9 @@ Create `Tests/SettingsStoreTests.swift`:
 
 ```swift
 import XCTest
-@testable import NewFile
+// Shared/ source files are compiled directly into this test target,
+// so types like FileTypeEntry / SettingsStore are accessible without
+// @testable import NewFile (test target is standalone & unsigned).
 
 final class SettingsStoreTests: XCTestCase {
 
