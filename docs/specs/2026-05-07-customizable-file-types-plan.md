@@ -14,7 +14,9 @@
 
 - **Repo root** in commands is `~/githubrepos/newfile`. All paths below are relative to that.
 - **Build cycle:** `xcodegen generate && xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build`. After `project.yml` changes, `xcodegen generate` regenerates `NewFile.xcodeproj`.
-- **Test cycle:** `xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests`. The `-allowProvisioningUpdates` flag is required because the App Group entitlement makes xcodebuild request a provisioning profile from Apple's developer portal; omit it and you get "No profiles for 'dev.newfile.NewFile' were found".
+- **Test cycle:** `xcodebuild test -scheme NewFileTests -destination 'platform=macOS'`. The `NewFileTests` scheme builds an unsigned standalone test bundle (no host app injection, no provisioning profile lookup) — see Task 1 Step 4(c).
+- **Build cycle for the host app + extension** uses `xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build`. The `-allowProvisioningUpdates` flag lets Xcode auto-fetch the Mac App Development provisioning profile that includes the App Group entitlement.
+- **Prerequisite:** AI-NODE-01 must be registered in team `Q7VD7MTRL8`'s device list (developer.apple.com → Devices). The App Group entitlement requires a provisioning profile that includes this device.
 - **Commit style:** match existing repo (`feat:`, `refactor:`, `test:`, `chore:`, `docs:` with scope when helpful, e.g. `extension:`, `app:`, `settings:`).
 - **Commit author:** the repo's git config controls this; do not override on the command line.
 - **Do not push** unless explicitly told.
@@ -96,7 +98,7 @@ Edit `Extension/NewFileExtension.entitlements` — add the same App Group block 
 
 Edit `project.yml`:
 
-(a) Under `targets.NewFile`, add the Shared path **and** attach `NewFileTests` to the scheme. Replace:
+(a) Under `targets.NewFile.sources`, add the Shared path. Replace:
 
 ```yaml
     sources:
@@ -111,15 +113,7 @@ with:
       - path: Shared
 ```
 
-And **inside the same `NewFile` target block**, append a `scheme:` section after `dependencies:` (preserve existing keys; do not remove `dependencies` or `settings`):
-
-```yaml
-    scheme:
-      testTargets:
-        - NewFileTests
-```
-
-This is required because the `NewFileTests` target intentionally has no `dependencies` link to `NewFile` (Option B / standalone-unsigned design); without an explicit `scheme.testTargets` entry, xcodegen builds a separate `NewFileTests` scheme and the `NewFile` scheme's test action stays empty.
+Do **not** add a `scheme.testTargets` block — the standalone-unsigned `NewFileTests` target gets its own auto-generated scheme, which is exactly what we want (it builds only the unsigned test bundle, never the host app).
 
 (b) Under `targets.NewFileExtension.sources`, do the same. Replace:
 
@@ -200,7 +194,7 @@ Expected: prints "Created project at .../NewFile.xcodeproj" with no errors.
 - [ ] **Step 7: Build and run tests**
 
 ```bash
-xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests
+xcodebuild test -scheme NewFileTests -destination 'platform=macOS'
 ```
 
 Expected: `Test Suite 'NewFileTests' passed` with `Executed 1 test`.
@@ -294,7 +288,7 @@ final class FilenameGeneratorTests: XCTestCase {
 - [ ] **Step 2: Run the tests to verify they fail**
 
 ```bash
-xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/FilenameGeneratorTests
+xcodebuild test -scheme NewFileTests -destination 'platform=macOS' -only-testing:NewFileTests/FilenameGeneratorTests
 ```
 
 Expected: build failure — `cannot find 'FilenameGenerator' in scope`.
@@ -341,7 +335,7 @@ enum FilenameGenerator {
 - [ ] **Step 4: Run the tests to verify they pass**
 
 ```bash
-xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/FilenameGeneratorTests
+xcodebuild test -scheme NewFileTests -destination 'platform=macOS' -only-testing:NewFileTests/FilenameGeneratorTests
 ```
 
 Expected: all 6 tests pass.
@@ -431,7 +425,7 @@ final class FileTypeEntryTests: XCTestCase {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/FileTypeEntryTests
+xcodebuild test -scheme NewFileTests -destination 'platform=macOS' -only-testing:NewFileTests/FileTypeEntryTests
 ```
 
 Expected: `cannot find 'FileTypeEntry' in scope`.
@@ -495,7 +489,7 @@ struct FileTypeEntry: Codable, Identifiable, Equatable, Hashable {
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/FileTypeEntryTests
+xcodebuild test -scheme NewFileTests -destination 'platform=macOS' -only-testing:NewFileTests/FileTypeEntryTests
 ```
 
 Expected: all 7 tests pass.
@@ -568,7 +562,7 @@ final class SeedPresetsTests: XCTestCase {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/SeedPresetsTests
+xcodebuild test -scheme NewFileTests -destination 'platform=macOS' -only-testing:NewFileTests/SeedPresetsTests
 ```
 
 Expected: `cannot find 'SeedPresets' in scope`.
@@ -597,7 +591,7 @@ enum SeedPresets {
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/SeedPresetsTests
+xcodebuild test -scheme NewFileTests -destination 'platform=macOS' -only-testing:NewFileTests/SeedPresetsTests
 ```
 
 Expected: all 6 tests pass.
@@ -703,7 +697,7 @@ final class SettingsStoreTests: XCTestCase {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/SettingsStoreTests
+xcodebuild test -scheme NewFileTests -destination 'platform=macOS' -only-testing:NewFileTests/SettingsStoreTests
 ```
 
 Expected: `cannot find 'SettingsStore' in scope`.
@@ -777,7 +771,7 @@ final class SettingsStore {
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/SettingsStoreTests
+xcodebuild test -scheme NewFileTests -destination 'platform=macOS' -only-testing:NewFileTests/SettingsStoreTests
 ```
 
 Expected: all 7 tests pass.
@@ -1040,7 +1034,7 @@ Expected: build succeeds with no warnings about unresolved symbols.
 - [ ] **Step 4: Run unit tests (regression check)**
 
 ```bash
-xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests
+xcodebuild test -scheme NewFileTests -destination 'platform=macOS'
 ```
 
 Expected: all prior tests still pass.
