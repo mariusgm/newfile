@@ -13,8 +13,8 @@
 ## Conventions for this plan
 
 - **Repo root** in commands is `~/githubrepos/newfile`. All paths below are relative to that.
-- **Build cycle:** `xcodegen generate && xcodebuild -scheme NewFile -configuration Debug build`. After `project.yml` changes, `xcodegen generate` regenerates `NewFile.xcodeproj`.
-- **Test cycle:** `xcodebuild test -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests`.
+- **Build cycle:** `xcodegen generate && xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build`. After `project.yml` changes, `xcodegen generate` regenerates `NewFile.xcodeproj`.
+- **Test cycle:** `xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests`. The `-allowProvisioningUpdates` flag is required because the App Group entitlement makes xcodebuild request a provisioning profile from Apple's developer portal; omit it and you get "No profiles for 'dev.newfile.NewFile' were found".
 - **Commit style:** match existing repo (`feat:`, `refactor:`, `test:`, `chore:`, `docs:` with scope when helpful, e.g. `extension:`, `app:`, `settings:`).
 - **Commit author:** the repo's git config controls this; do not override on the command line.
 - **Do not push** unless explicitly told.
@@ -190,7 +190,7 @@ Expected: prints "Created project at .../NewFile.xcodeproj" with no errors.
 - [ ] **Step 7: Build and run tests**
 
 ```bash
-xcodebuild test -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests
+xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests
 ```
 
 Expected: `Test Suite 'NewFileTests' passed` with `Executed 1 test`.
@@ -282,7 +282,7 @@ final class FilenameGeneratorTests: XCTestCase {
 - [ ] **Step 2: Run the tests to verify they fail**
 
 ```bash
-xcodebuild test -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/FilenameGeneratorTests
+xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/FilenameGeneratorTests
 ```
 
 Expected: build failure — `cannot find 'FilenameGenerator' in scope`.
@@ -329,7 +329,7 @@ enum FilenameGenerator {
 - [ ] **Step 4: Run the tests to verify they pass**
 
 ```bash
-xcodebuild test -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/FilenameGeneratorTests
+xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/FilenameGeneratorTests
 ```
 
 Expected: all 6 tests pass.
@@ -417,7 +417,7 @@ final class FileTypeEntryTests: XCTestCase {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-xcodebuild test -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/FileTypeEntryTests
+xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/FileTypeEntryTests
 ```
 
 Expected: `cannot find 'FileTypeEntry' in scope`.
@@ -481,7 +481,7 @@ struct FileTypeEntry: Codable, Identifiable, Equatable, Hashable {
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-xcodebuild test -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/FileTypeEntryTests
+xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/FileTypeEntryTests
 ```
 
 Expected: all 7 tests pass.
@@ -552,7 +552,7 @@ final class SeedPresetsTests: XCTestCase {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-xcodebuild test -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/SeedPresetsTests
+xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/SeedPresetsTests
 ```
 
 Expected: `cannot find 'SeedPresets' in scope`.
@@ -581,7 +581,7 @@ enum SeedPresets {
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-xcodebuild test -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/SeedPresetsTests
+xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/SeedPresetsTests
 ```
 
 Expected: all 6 tests pass.
@@ -685,7 +685,7 @@ final class SettingsStoreTests: XCTestCase {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-xcodebuild test -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/SettingsStoreTests
+xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/SettingsStoreTests
 ```
 
 Expected: `cannot find 'SettingsStore' in scope`.
@@ -759,7 +759,7 @@ final class SettingsStore {
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-xcodebuild test -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/SettingsStoreTests
+xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests/SettingsStoreTests
 ```
 
 Expected: all 7 tests pass.
@@ -798,7 +798,7 @@ enum NewFileNotification {
 - [ ] **Step 2: Build to verify it compiles**
 
 ```bash
-xcodebuild -scheme NewFile -configuration Debug build
+xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build
 ```
 
 Expected: build succeeds. (No tests for a constants file.)
@@ -1014,7 +1014,7 @@ Also remove the constant property usage if Swift complains; the rest of the file
 
 ```bash
 xcodegen generate
-xcodebuild -scheme NewFile -configuration Debug build
+xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build
 ```
 
 Expected: build succeeds with no warnings about unresolved symbols.
@@ -1022,7 +1022,7 @@ Expected: build succeeds with no warnings about unresolved symbols.
 - [ ] **Step 4: Run unit tests (regression check)**
 
 ```bash
-xcodebuild test -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests
+xcodebuild test -allowProvisioningUpdates -scheme NewFile -destination 'platform=macOS' -only-testing:NewFileTests
 ```
 
 Expected: all prior tests still pass.
@@ -1146,7 +1146,7 @@ Remove the now-unused old `menu(for:)` and the `createDefaultFile(_:)` action (t
 - [ ] **Step 2: Build**
 
 ```bash
-xcodebuild -scheme NewFile -configuration Debug build
+xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build
 ```
 
 Expected: build succeeds.
@@ -1291,7 +1291,7 @@ struct PreferencesView: View {
 
 ```bash
 xcodegen generate
-xcodebuild -scheme NewFile -configuration Debug build
+xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build
 ```
 
 Expected: build succeeds.
@@ -1404,7 +1404,7 @@ struct PreferencesView: View {
 - [ ] **Step 2: Build & manual verify**
 
 ```bash
-xcodebuild -scheme NewFile -configuration Debug build
+xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build
 ```
 
 Run the app, press ⌘,. Confirm the Preferences window shows the seeded list (txt enabled, others disabled), the submenu toggle, and the Done button. Toggle the submenu checkbox, close the window, reopen — the toggle should persist.
@@ -1602,7 +1602,7 @@ And add a `delete` method to `PreferencesViewModel`:
 - [ ] **Step 4: Build & manual verify**
 
 ```bash
-xcodebuild -scheme NewFile -configuration Debug build
+xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build
 ```
 
 Run the app, ⌘,. Verify:
@@ -1698,7 +1698,7 @@ Add helpers to `PreferencesView`:
 - [ ] **Step 2: Build & manual verify**
 
 ```bash
-xcodebuild -scheme NewFile -configuration Debug build
+xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build
 ```
 
 Run the app, ⌘,. Verify:
@@ -1764,7 +1764,7 @@ Add to `PreferencesViewModel`:
 - [ ] **Step 2: Build**
 
 ```bash
-xcodebuild -scheme NewFile -configuration Debug build
+xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build
 ```
 
 - [ ] **Step 3: Manual verification — drag-to-reorder**
@@ -1850,7 +1850,7 @@ In `App/NewFileApp.swift`, replace `applicationDidFinishLaunching` with:
 - [ ] **Step 2: Build & verify it doesn't fire under normal conditions**
 
 ```bash
-xcodebuild -scheme NewFile -configuration Debug build
+xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build
 ```
 
 Run the app — confirm **no alert** appears (the App Group entitlement from Task 1 is in place).
@@ -1927,7 +1927,7 @@ git commit -m "docs: customization usage + App Group provisioning notes"
 
 ```bash
 defaults delete group.dev.newfile.NewFile 2>/dev/null
-xcodebuild -scheme NewFile -configuration Debug build
+xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build
 ```
 
 Launch app from Xcode (⌘R). Ensure the Finder extension is enabled.
