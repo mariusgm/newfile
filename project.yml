@@ -17,7 +17,7 @@ settings:
   configs:
     Debug:
       CODE_SIGN_STYLE: Automatic
-      CODE_SIGN_IDENTITY: "-"
+      CODE_SIGN_IDENTITY: "Apple Development"
     Release:
       CODE_SIGN_STYLE: Manual
       CODE_SIGN_IDENTITY: "Developer ID Application"
@@ -28,6 +28,7 @@ targets:
     platform: macOS
     sources:
       - path: App
+      - path: Shared
     info:
       path: App/Info.plist
       properties:
@@ -55,6 +56,7 @@ targets:
     platform: macOS
     sources:
       - path: Extension
+      - path: Shared
     info:
       path: Extension/Info.plist
       properties:
@@ -69,3 +71,16 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.newfile.NewFile.NewFileExtension
         CODE_SIGN_ENTITLEMENTS: Extension/NewFileExtension.entitlements
+
+  NewFileTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+      - path: Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.newfile.NewFile.NewFileTests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGNING_ALLOWED: NO
