@@ -96,7 +96,7 @@ Edit `Extension/NewFileExtension.entitlements` — add the same App Group block 
 
 Edit `project.yml`:
 
-(a) Under `targets.NewFile.sources`, add the Shared path. Replace:
+(a) Under `targets.NewFile`, add the Shared path **and** attach `NewFileTests` to the scheme. Replace:
 
 ```yaml
     sources:
@@ -110,6 +110,16 @@ with:
       - path: App
       - path: Shared
 ```
+
+And **inside the same `NewFile` target block**, append a `scheme:` section after `dependencies:` (preserve existing keys; do not remove `dependencies` or `settings`):
+
+```yaml
+    scheme:
+      testTargets:
+        - NewFileTests
+```
+
+This is required because the `NewFileTests` target intentionally has no `dependencies` link to `NewFile` (Option B / standalone-unsigned design); without an explicit `scheme.testTargets` entry, xcodegen builds a separate `NewFileTests` scheme and the `NewFile` scheme's test action stays empty.
 
 (b) Under `targets.NewFileExtension.sources`, do the same. Replace:
 
