@@ -142,7 +142,26 @@ with:
         PRODUCT_BUNDLE_IDENTIFIER: dev.newfile.NewFile.NewFileTests
         BUNDLE_LOADER: $(TEST_HOST)
         TEST_HOST: $(BUILT_PRODUCTS_DIR)/NewFile.app/Contents/MacOS/NewFile
+        GENERATE_INFOPLIST_FILE: YES
 ```
+
+(d) The App Group entitlement requires a real Apple Development certificate — ad-hoc signing (`CODE_SIGN_IDENTITY: "-"`) cannot carry `application-groups`. Update the Debug config under `settings.configs`. Replace:
+
+```yaml
+    Debug:
+      CODE_SIGN_STYLE: Automatic
+      CODE_SIGN_IDENTITY: "-"
+```
+
+with:
+
+```yaml
+    Debug:
+      CODE_SIGN_STYLE: Automatic
+      CODE_SIGN_IDENTITY: "Apple Development"
+```
+
+The `DEVELOPMENT_TEAM: Q7VD7MTRL8` already in `settings.base` lets Xcode auto-provision a dev profile that includes the App Group.
 
 - [ ] **Step 5: Write a smoke test**
 
