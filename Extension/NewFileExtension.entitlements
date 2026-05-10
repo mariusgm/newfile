@@ -15,5 +15,9 @@
         <string>/Volumes/</string>
         <string>/private/tmp/</string>
     </array>
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.dev.newfile.NewFile</string>
+    </array>
 </dict>
 </plist>

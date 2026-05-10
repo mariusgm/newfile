@@ -6,8 +6,12 @@ private let log = Logger(subsystem: "dev.newfile.NewFile", category: "extension"
 
 final class FinderSync: FIFinderSync {
 
-    private static let baseName = "New Text File"
-    private static let fileExtension = "txt"
+    private let settings: SettingsStore? = SettingsStore.appGroupStore()
+
+    // Snapshot of entries indexed by NSMenuItem.tag at menu-construction time.
+    // representedObject can't carry a Swift struct across the FinderSync XPC bridge,
+    // so the action handler looks the entry up by tag instead.
+    private var menuEntrySnapshot: [FileTypeEntry] = []
 
     override init() {
         super.init()
@@ -19,7 +23,7 @@ final class FinderSync: FIFinderSync {
 
     override var toolbarItemName: String { "NewFile" }
 
-    override var toolbarItemToolTip: String { "Create a new text file in this folder" }
+    override var toolbarItemToolTip: String { "Create a new file in this folder" }
 
     override var toolbarItemImage: NSImage {
         Self.toolbarIcon(accessibility: "New File")
@@ -28,14 +32,109 @@ final class FinderSync: FIFinderSync {
     // MARK: - Menus
 
     override func menu(for menu: FIMenuKind) -> NSMenu? {
-        let nsMenu = NSMenu(title: "")
-        let item = NSMenuItem(title: "New Text File",
-                              action: #selector(createNewFile(_:)),
-                              keyEquivalent: "")
+        switch menu {
+        case .contextualMenuForItems:
+            return nil
+        case .toolbarItemMenu:
+            return buildToolbarMenu()
+        default:
+            return buildContextMenu()
+        }
+    }
+
+    private func buildToolbarMenu() -> NSMenu {
+        let menu = NSMenu(title: "")
+        menuEntrySnapshot = []
+        let entries = settings?.enabledTypes ?? []
+        if entries.isEmpty {
+            appendEmptyRow(to: menu)
+        } else {
+            for entry in entries { addRow(for: entry, to: menu) }
+        }
+        menu.addItem(NSMenuItem.separator())
+        appendCustomizeRow(to: menu)
+        return menu
+    }
+
+    private func buildContextMenu() -> NSMenu {
+        let menu = NSMenu(title: "")
+        menuEntrySnapshot = []
+        let entries = settings?.enabledTypes ?? []
+        if entries.isEmpty {
+            appendEmptyRow(to: menu)
+            return menu
+        }
+        if settings?.useRightClickSubmenu == true {
+            let parent = NSMenuItem(title: "New File", action: nil, keyEquivalent: "")
+            parent.image = Self.menuIcon()
+            let sub = NSMenu(title: "")
+            for entry in entries { addRow(for: entry, to: sub) }
+            parent.submenu = sub
+            menu.addItem(parent)
+        } else {
+            for entry in entries { addRow(for: entry, to: menu) }
+        }
+        return menu
+    }
+
+    private func appendCustomizeRow(to menu: NSMenu) {
+        let item = NSMenuItem(
+            title: "Customize…",
+            action: #selector(openPreferences(_:)),
+            keyEquivalent: ""
+        )
+        item.target = self
+        menu.addItem(item)
+    }
+
+    private func appendEmptyRow(to menu: NSMenu) {
+        let item = NSMenuItem(
+            title: "Enable a file type in NewFile…",
+            action: #selector(openPreferences(_:)),
+            keyEquivalent: ""
+        )
+        item.target = self
+        menu.addItem(item)
+    }
+
+    @objc func openPreferences(_ sender: AnyObject?) {
+        log.info("openPreferences requested")
+        // Latch the launch-intent BEFORE posting the notification + opening
+        // the host. If the app is already running, the observer fires and
+        // clears the latch immediately. If the app needs to launch, the
+        // notification beats the observer's registration; the AppDelegate
+        // checks-and-clears the latch on launch as a fallback.
+        settings?.pendingOpenPreferences = true
+        DistributedNotificationCenter.default().postNotificationName(
+            NewFileNotification.openPreferences,
+            object: nil, userInfo: nil, deliverImmediately: true
+        )
+        if let url = hostAppURL() {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    private func hostAppURL() -> URL? {
+        // Extension bundle is .../NewFile.app/Contents/PlugIns/NewFileExtension.appex.
+        // Walk up four levels to land on the host app.
+        let bundle = Bundle(for: FinderSync.self).bundleURL
+        return bundle
+            .deletingLastPathComponent()  // PlugIns
+            .deletingLastPathComponent()  // Contents
+            .deletingLastPathComponent()  // NewFile.app
+    }
+
+    private func addRow(for entry: FileTypeEntry, to menu: NSMenu) {
+        let item = NSMenuItem(
+            title: entry.displayName,
+            action: #selector(createFromMenuItem(_:)),
+            keyEquivalent: ""
+        )
         item.target = self
         item.image = Self.menuIcon()
-        nsMenu.addItem(item)
-        return nsMenu
+        item.tag = menuEntrySnapshot.count
+        menuEntrySnapshot.append(entry)
+        menu.addItem(item)
     }
 
     private static func toolbarIcon(accessibility: String?) -> NSImage {
@@ -45,7 +144,6 @@ final class FinderSync: FIFinderSync {
             image.accessibilityDescription = accessibility
             return image
         }
-        // Fallback if asset is missing — keeps the toolbar item usable.
         let fallback = NSImage(systemSymbolName: "square.and.pencil",
                                accessibilityDescription: accessibility)
             ?? NSImage()
@@ -53,11 +151,6 @@ final class FinderSync: FIFinderSync {
         return fallback
     }
 
-    // Context-menu row uses the canonical macOS "compose" SF Symbol. Template
-    // tinting through the Finder-Sync extension XPC path is unreliable in
-    // current macOS, so we apply an explicit palette tint with the dynamic
-    // labelColor — resolves to ~white in dark menus, ~black in light menus,
-    // matching the system items above.
     private static func menuIcon() -> NSImage {
         guard let base = NSImage(systemSymbolName: "square.and.pencil",
                                  accessibilityDescription: "New File") else {
@@ -67,34 +160,37 @@ final class FinderSync: FIFinderSync {
         return base.withSymbolConfiguration(config) ?? base
     }
 
-    // MARK: - Action
+    // MARK: - Actions
 
-    private static let firstUseNotificationName =
-        Notification.Name("dev.newfile.NewFile.toolbarOrMenuUsed")
+    @objc func createFromMenuItem(_ sender: AnyObject?) {
+        guard let item = sender as? NSMenuItem,
+              menuEntrySnapshot.indices.contains(item.tag) else {
+            log.error("createFromMenuItem: tag \(((sender as? NSMenuItem)?.tag ?? -1)) out of range (snapshot=\(self.menuEntrySnapshot.count))")
+            NSSound.beep()
+            return
+        }
+        performCreate(entry: menuEntrySnapshot[item.tag])
+    }
 
-    @objc func createNewFile(_ sender: AnyObject?) {
-        log.info("createNewFile invoked")
+    private func performCreate(entry: FileTypeEntry) {
+        log.info("create entry=\(entry.displayName, privacy: .public) ext=\(entry.ext, privacy: .public)")
         DistributedNotificationCenter.default().postNotificationName(
-            Self.firstUseNotificationName,
-            object: nil,
-            userInfo: nil,
-            deliverImmediately: true
+            NewFileNotification.toolbarOrMenuUsed,
+            object: nil, userInfo: nil, deliverImmediately: true
         )
 
         let controller = FIFinderSyncController.default()
         let target = controller.targetedURL()
         let selected = controller.selectedItemURLs()
-        log.info("targetedURL=\(target?.path ?? "nil", privacy: .public) selected=\(selected?.map { $0.path }.joined(separator: ", ") ?? "nil", privacy: .public)")
 
         guard let directory = directoryForCreation(target: target, selected: selected) else {
             log.error("No target directory available")
             NSSound.beep()
             return
         }
-        log.info("creating in directory=\(directory.path, privacy: .public)")
 
         do {
-            let url = try createUniqueFile(in: directory)
+            let url = try createFile(for: entry, in: directory)
             log.info("created file=\(url.path, privacy: .public)")
             revealFile(at: url)
         } catch {
@@ -104,6 +200,17 @@ final class FinderSync: FIFinderSync {
     }
 
     // MARK: - Helpers
+
+    private func createFile(for entry: FileTypeEntry, in directory: URL) throws -> URL {
+        let url = FilenameGenerator.uniqueFileURL(
+            in: directory, baseName: entry.baseName, ext: entry.ext
+        )
+        let scoped = directory.startAccessingSecurityScopedResource()
+        defer { if scoped { directory.stopAccessingSecurityScopedResource() } }
+        let data = entry.template.data(using: .utf8) ?? Data()
+        try data.write(to: url, options: [.withoutOverwriting])
+        return url
+    }
 
     private func directoryForCreation(target: URL?, selected: [URL]?) -> URL? {
         if let target { return resolvedDirectory(for: target) }
@@ -120,30 +227,10 @@ final class FinderSync: FIFinderSync {
         return url.deletingLastPathComponent()
     }
 
-    private func createUniqueFile(in directory: URL) throws -> URL {
-        let url = uniqueFileURL(in: directory,
-                                baseName: Self.baseName,
-                                ext: Self.fileExtension)
-        let scoped = directory.startAccessingSecurityScopedResource()
-        defer { if scoped { directory.stopAccessingSecurityScopedResource() } }
-        try Data().write(to: url, options: [.withoutOverwriting])
-        return url
-    }
-
-    private func uniqueFileURL(in directory: URL, baseName: String, ext: String) -> URL {
-        let fm = FileManager.default
-        var candidate = directory.appendingPathComponent("\(baseName).\(ext)")
-        var i = 2
-        while fm.fileExists(atPath: candidate.path) {
-            candidate = directory.appendingPathComponent("\(baseName) \(i).\(ext)")
-            i += 1
-        }
-        return candidate
-    }
-
     private func revealFile(at url: URL) {
-        // NSWorkspace from extension context: select via Finder app directly.
-        NSWorkspace.shared.selectFile(url.path,
-                                      inFileViewerRootedAtPath: url.deletingLastPathComponent().path)
+        NSWorkspace.shared.selectFile(
+            url.path,
+            inFileViewerRootedAtPath: url.deletingLastPathComponent().path
+        )
     }
 }

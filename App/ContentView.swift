@@ -7,8 +7,7 @@ final class SetupStatus: ObservableObject {
     @Published private(set) var hasUsedAction: Bool = false
 
     private let usedKey = "hasUsedAction"
-    private let firstUseNotification =
-        Notification.Name("dev.newfile.NewFile.toolbarOrMenuUsed")
+    private let firstUseNotification = NewFileNotification.toolbarOrMenuUsed
 
     init() {
         hasUsedAction = UserDefaults.standard.bool(forKey: usedKey)
