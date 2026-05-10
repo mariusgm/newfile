@@ -23,6 +23,19 @@ final class PreferencesViewModel: ObservableObject {
         fileTypes.removeAll { $0.id == entry.id }
         persist()
     }
+
+    func addCustomType() {
+        let new = FileTypeEntry(
+            ext: "",
+            baseName: "",
+            displayName: "New file",
+            template: "",
+            enabled: true,
+            isBuiltIn: false
+        )
+        fileTypes.append(new)
+        // No persist yet — empty ext is invalid; persist on next valid edit.
+    }
 }
 
 struct PreferencesView: View {
@@ -34,18 +47,24 @@ struct PreferencesView: View {
             HStack {
                 Text("File types").font(.headline)
                 Spacer()
-                Button("+ Add type…") { /* Task 12 */ }
-                    .disabled(true) // enabled in Task 12
+                Button("+ Add type…") { vm.addCustomType() }
             }
 
             ScrollView {
                 VStack(spacing: 0) {
                     ForEach($vm.fileTypes) { $entry in
+                        if !entry.isBuiltIn && isFirstCustom(entry, in: vm.fileTypes) {
+                            sectionDivider("your types")
+                        }
                         FileTypeRow(
                             entry: $entry,
                             onDelete: entry.isBuiltIn ? nil : { vm.delete(entry) }
                         )
-                        .onChange(of: entry) { _ in vm.persist() }
+                        .onChange(of: entry) { newValue in
+                            if newValue.isBuiltIn || (try? FileTypeEntry.validateExtension(newValue.ext)) != nil {
+                                vm.persist()
+                            }
+                        }
                         Divider()
                     }
                 }
@@ -68,6 +87,21 @@ struct PreferencesView: View {
         }
         .padding(20)
         .frame(minWidth: 520, minHeight: 560)
+    }
+
+    private func isFirstCustom(_ entry: FileTypeEntry, in list: [FileTypeEntry]) -> Bool {
+        guard let first = list.first(where: { !$0.isBuiltIn }) else { return false }
+        return first.id == entry.id
+    }
+
+    private func sectionDivider(_ title: String) -> some View {
+        HStack {
+            Text("— \(title) —")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+            Spacer()
+        }
+        .padding(.top, 8)
     }
 }
 
