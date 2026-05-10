@@ -15,8 +15,19 @@
 - **Repo root** in commands is `~/githubrepos/newfile`. All paths below are relative to that.
 - **Build cycle:** `xcodegen generate && xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build`. After `project.yml` changes, `xcodegen generate` regenerates `NewFile.xcodeproj`.
 - **Test cycle:** `xcodebuild test -scheme NewFileTests -destination 'platform=macOS'`. The `NewFileTests` scheme builds an unsigned standalone test bundle (no host app injection, no provisioning profile lookup) — see Task 1 Step 4(c).
-- **Build cycle for the host app + extension** uses `xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug build`. The `-allowProvisioningUpdates` flag lets Xcode auto-fetch the Mac App Development provisioning profile that includes the App Group entitlement.
-- **Prerequisite:** AI-NODE-01 must be registered in team `Q7VD7MTRL8`'s device list (developer.apple.com → Devices). The App Group entitlement requires a provisioning profile that includes this device.
+- **Build cycle for the host app + extension** uses `xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug ENABLE_DEBUG_DYLIB=NO build`. The `-allowProvisioningUpdates` flag fetches the Mac App Development provisioning profile that includes the App Group entitlement. **The `ENABLE_DEBUG_DYLIB=NO` flag is required for any build that produces a .appex used by Finder** — Xcode 26 defaults to producing a 57KB stub .appex that loads its real code from a dylib in DerivedData, and a sandboxed FinderSync extension cannot reach that path. Without this flag the extension binary in /Applications has none of your code in it. Confirm by checking the .appex binary size: ~287KB+ means self-contained, ~57KB means stub.
+- **Smoke-test install cycle (any task whose verification involves Finder):** Xcode's ⌘R is unreliable for FinderSync extensions because pluginkit binds Finder to the most-recently-registered .appex (often the `/Applications` copy from a prior DMG install) and the freshly-built DerivedData copy is silently ignored. Use this sequence instead after every host-app/extension code change:
+  ```bash
+  cd ~/githubrepos/newfile
+  xcodebuild -allowProvisioningUpdates -scheme NewFile -configuration Debug ENABLE_DEBUG_DYLIB=NO build
+  rm -rf /Applications/NewFile.app
+  cp -R ~/Library/Developer/Xcode/DerivedData/NewFile-*/Build/Products/Debug/NewFile.app /Applications/
+  /System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/LaunchServices.framework/Versions/Current/Support/lsregister -f -R -trusted /Applications/NewFile.app
+  killall Finder
+  ```
+  Then verify in Finder. Toggle the extension on at System Settings → General → Login Items & Extensions → Extensions if needed (only required once after a fresh install).
+- **NSMenuItem.representedObject does NOT survive the FinderSync XPC bridge.** Finder marshals the menu out to display, then back in to invoke the action — Swift structs (and any non-NSCoding-conformant value) silently drop to nil on the return trip. **Dispatch by `item.tag`** keyed into a snapshot array stored on `self`, never via `representedObject`. See Task 7 / Task 8 implementations.
+- **Prerequisite:** AI-NODE-01 must be registered in team `Q7VD7MTRL8`'s device list (developer.apple.com → Devices) using the **Provisioning UDID** (not Hardware UUID). The App Group entitlement requires a provisioning profile that includes this device.
 - **Commit style:** match existing repo (`feat:`, `refactor:`, `test:`, `chore:`, `docs:` with scope when helpful, e.g. `extension:`, `app:`, `settings:`).
 - **Commit author:** the repo's git config controls this; do not override on the command line.
 - **Do not push** unless explicitly told.
