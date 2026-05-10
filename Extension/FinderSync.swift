@@ -8,6 +8,11 @@ final class FinderSync: FIFinderSync {
 
     private let settings: SettingsStore? = SettingsStore.appGroupStore()
 
+    // Snapshot of entries indexed by NSMenuItem.tag at menu-construction time.
+    // representedObject can't carry a Swift struct across the FinderSync XPC bridge,
+    // so the action handler looks the entry up by tag instead.
+    private var menuEntrySnapshot: [FileTypeEntry] = []
+
     override init() {
         super.init()
         FIFinderSyncController.default().directoryURLs = [URL(fileURLWithPath: "/")]
@@ -39,6 +44,7 @@ final class FinderSync: FIFinderSync {
 
     private func buildToolbarMenu() -> NSMenu {
         let menu = NSMenu(title: "")
+        menuEntrySnapshot = []
         let entries = settings?.enabledTypes ?? []
         if entries.isEmpty {
             appendEmptyRow(to: menu)
@@ -52,6 +58,7 @@ final class FinderSync: FIFinderSync {
 
     private func buildContextMenu() -> NSMenu {
         let menu = NSMenu(title: "")
+        menuEntrySnapshot = []
         let entries = settings?.enabledTypes ?? []
         if entries.isEmpty {
             appendEmptyRow(to: menu)
@@ -120,7 +127,8 @@ final class FinderSync: FIFinderSync {
         )
         item.target = self
         item.image = Self.menuIcon()
-        item.representedObject = entry
+        item.tag = menuEntrySnapshot.count
+        menuEntrySnapshot.append(entry)
         menu.addItem(item)
     }
 
@@ -151,12 +159,12 @@ final class FinderSync: FIFinderSync {
 
     @objc func createFromMenuItem(_ sender: AnyObject?) {
         guard let item = sender as? NSMenuItem,
-              let entry = item.representedObject as? FileTypeEntry else {
-            log.error("createFromMenuItem: missing representedObject")
+              menuEntrySnapshot.indices.contains(item.tag) else {
+            log.error("createFromMenuItem: tag \(((sender as? NSMenuItem)?.tag ?? -1)) out of range (snapshot=\(self.menuEntrySnapshot.count))")
             NSSound.beep()
             return
         }
-        performCreate(entry: entry)
+        performCreate(entry: menuEntrySnapshot[item.tag])
     }
 
     private func performCreate(entry: FileTypeEntry) {
