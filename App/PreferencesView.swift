@@ -18,6 +18,11 @@ final class PreferencesViewModel: ObservableObject {
     func persist() {
         store?.fileTypes = fileTypes
     }
+
+    func delete(_ entry: FileTypeEntry) {
+        fileTypes.removeAll { $0.id == entry.id }
+        persist()
+    }
 }
 
 struct PreferencesView: View {
@@ -33,19 +38,14 @@ struct PreferencesView: View {
                     .disabled(true) // enabled in Task 12
             }
 
-            // Placeholder list — rows arrive in Task 11.
             ScrollView {
                 VStack(spacing: 0) {
-                    ForEach(vm.fileTypes) { entry in
-                        HStack {
-                            Image(systemName: "line.3.horizontal").foregroundStyle(.tertiary)
-                            Toggle("", isOn: .constant(entry.enabled)).labelsHidden().disabled(true)
-                            Text(".\(entry.ext)").font(.system(.body, design: .monospaced))
-                            Text("\"\(entry.baseName)\"").foregroundStyle(.secondary)
-                            Spacer()
-                            Button("Template…") { /* Task 11 */ }.disabled(true)
-                        }
-                        .padding(.vertical, 4)
+                    ForEach($vm.fileTypes) { $entry in
+                        FileTypeRow(
+                            entry: $entry,
+                            onDelete: entry.isBuiltIn ? nil : { vm.delete(entry) }
+                        )
+                        .onChange(of: entry) { _ in vm.persist() }
                         Divider()
                     }
                 }
