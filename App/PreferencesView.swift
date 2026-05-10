@@ -36,6 +36,11 @@ final class PreferencesViewModel: ObservableObject {
         fileTypes.append(new)
         // No persist yet — empty ext is invalid; persist on next valid edit.
     }
+
+    func move(from source: IndexSet, to destination: Int) {
+        fileTypes.move(fromOffsets: source, toOffset: destination)
+        persist()
+    }
 }
 
 struct PreferencesView: View {
@@ -50,25 +55,24 @@ struct PreferencesView: View {
                 Button("+ Add type…") { vm.addCustomType() }
             }
 
-            ScrollView {
-                VStack(spacing: 0) {
-                    ForEach($vm.fileTypes) { $entry in
-                        if !entry.isBuiltIn && isFirstCustom(entry, in: vm.fileTypes) {
-                            sectionDivider("your types")
+            List {
+                ForEach($vm.fileTypes) { $entry in
+                    if !entry.isBuiltIn && isFirstCustom(entry, in: vm.fileTypes) {
+                        sectionDivider("your types")
+                    }
+                    FileTypeRow(
+                        entry: $entry,
+                        onDelete: entry.isBuiltIn ? nil : { vm.delete(entry) }
+                    )
+                    .onChange(of: entry) { newValue in
+                        if newValue.isBuiltIn || (try? FileTypeEntry.validateExtension(newValue.ext)) != nil {
+                            vm.persist()
                         }
-                        FileTypeRow(
-                            entry: $entry,
-                            onDelete: entry.isBuiltIn ? nil : { vm.delete(entry) }
-                        )
-                        .onChange(of: entry) { newValue in
-                            if newValue.isBuiltIn || (try? FileTypeEntry.validateExtension(newValue.ext)) != nil {
-                                vm.persist()
-                            }
-                        }
-                        Divider()
                     }
                 }
+                .onMove { source, dest in vm.move(from: source, to: dest) }
             }
+            .listStyle(.plain)
             .frame(minHeight: 320)
 
             Toggle("Use submenu in right-click menu", isOn: $vm.useRightClickSubmenu)
