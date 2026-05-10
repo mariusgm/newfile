@@ -44,6 +44,17 @@ In any Finder window: **View → Customize Toolbar…** → drag the NewFile ico
 
 The created file is named `New Text File.txt`. If that name exists, it becomes `New Text File 2.txt`, then `New Text File 3.txt`, and so on.
 
+## Customize
+
+Open **NewFile.app → ⌘,** (or click the toolbar dropdown → **Customize…**) to:
+
+- Enable additional file types — `.md`, `.env`, `.json`, `.yml`, `.sh`, `.gitignore`, `.html` ship as built-in presets, all disabled by default except `.txt`.
+- Add your own types (e.g. `.tsx`, `.toml`). Lowercase letters, digits, `.`, `_`, `-` only.
+- Edit the default base name per type. Leave it empty for dotfile-style names (e.g. `.env`, `.gitignore`).
+- Set a starter **template** — plain text saved as the new file's content.
+- Reorder. The order in Preferences is the order in the right-click and toolbar menus. The first enabled type is the toolbar's fast-path action.
+- Optional: switch the right-click menu to a **"New File ▸"** submenu instead of inline rows.
+
 ## Build from source
 
 ```sh

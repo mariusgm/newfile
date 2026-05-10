@@ -108,6 +108,17 @@ xcrun stapler staple build/NewFile.dmg
 
 Upload `build/NewFile.dmg` to a GitHub Release.
 
+### App Group provisioning
+
+Both the host app (`dev.newfile.NewFile`) and the extension (`dev.newfile.NewFile.NewFileExtension`) must include the App Group `group.dev.newfile.NewFile` in their provisioning profiles. With `CODE_SIGN_STYLE: Automatic` (Debug) Xcode handles this. For Release / Developer ID distribution:
+
+1. In the Apple Developer portal, create the App Group `group.dev.newfile.NewFile` once.
+2. Add it to both bundle IDs.
+3. Regenerate the provisioning profiles and download.
+4. The entitlements files in this repo (`App/NewFile.entitlements`, `Extension/NewFileExtension.entitlements`) already declare the group; verify after `xcodegen generate`.
+
+If the host app launches and shows "NewFile is misconfigured", the App Group is unreachable — usually a profile / entitlement mismatch.
+
 ## Homebrew cask
 
 After the first signed + notarized release is on GitHub:
