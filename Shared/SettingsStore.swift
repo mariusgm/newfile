@@ -7,6 +7,7 @@ final class SettingsStore {
         static let fileTypes = "fileTypes"
         static let submenu = "useRightClickSubmenu"
         static let schema = "schemaVersion"
+        static let pendingOpenPreferences = "pendingOpenPreferences"
     }
 
     private static let currentSchema = 1
@@ -50,6 +51,17 @@ final class SettingsStore {
     var useRightClickSubmenu: Bool {
         get { defaults.bool(forKey: Key.submenu) }
         set { defaults.set(newValue, forKey: Key.submenu) }
+    }
+
+    /// Latch flipped by the extension before `NSWorkspace.shared.open(host)`.
+    /// AppDelegate consumes-and-clears on launch so the host app shows
+    /// Preferences instead of the welcome window when launched via the
+    /// extension's "Customize…" / empty-list-recovery row. The distributed
+    /// notification alone can't carry this intent across launch because the
+    /// observer registers after the notification has already been posted.
+    var pendingOpenPreferences: Bool {
+        get { defaults.bool(forKey: Key.pendingOpenPreferences) }
+        set { defaults.set(newValue, forKey: Key.pendingOpenPreferences) }
     }
 
     private func persist(_ types: [FileTypeEntry]) {

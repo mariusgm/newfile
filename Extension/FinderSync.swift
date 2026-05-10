@@ -99,11 +99,16 @@ final class FinderSync: FIFinderSync {
 
     @objc func openPreferences(_ sender: AnyObject?) {
         log.info("openPreferences requested")
+        // Latch the launch-intent BEFORE posting the notification + opening
+        // the host. If the app is already running, the observer fires and
+        // clears the latch immediately. If the app needs to launch, the
+        // notification beats the observer's registration; the AppDelegate
+        // checks-and-clears the latch on launch as a fallback.
+        settings?.pendingOpenPreferences = true
         DistributedNotificationCenter.default().postNotificationName(
             NewFileNotification.openPreferences,
             object: nil, userInfo: nil, deliverImmediately: true
         )
-        // Also activate host app in case it isn't running yet.
         if let url = hostAppURL() {
             NSWorkspace.shared.open(url)
         }
