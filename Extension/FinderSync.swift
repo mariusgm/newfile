@@ -27,23 +27,89 @@ final class FinderSync: FIFinderSync {
     // MARK: - Menus
 
     override func menu(for menu: FIMenuKind) -> NSMenu? {
-        let nsMenu = NSMenu(title: "")
-        let entries = settings?.enabledTypes ?? []
-
-        if let primary = entries.first {
-            addRow(for: primary, to: nsMenu)
-        } else {
-            // Fallback when no settings available or all disabled.
-            let item = NSMenuItem(
-                title: "New Text File",
-                action: #selector(createDefaultFile(_:)),
-                keyEquivalent: ""
-            )
-            item.target = self
-            item.image = Self.menuIcon()
-            nsMenu.addItem(item)
+        switch menu {
+        case .contextualMenuForItems:
+            return nil
+        case .toolbarItemMenu:
+            return buildToolbarMenu()
+        default:
+            return buildContextMenu()
         }
-        return nsMenu
+    }
+
+    private func buildToolbarMenu() -> NSMenu {
+        let menu = NSMenu(title: "")
+        let entries = settings?.enabledTypes ?? []
+        if entries.isEmpty {
+            appendEmptyRow(to: menu)
+        } else {
+            for entry in entries { addRow(for: entry, to: menu) }
+        }
+        menu.addItem(NSMenuItem.separator())
+        appendCustomizeRow(to: menu)
+        return menu
+    }
+
+    private func buildContextMenu() -> NSMenu {
+        let menu = NSMenu(title: "")
+        let entries = settings?.enabledTypes ?? []
+        if entries.isEmpty {
+            appendEmptyRow(to: menu)
+            return menu
+        }
+        if settings?.useRightClickSubmenu == true {
+            let parent = NSMenuItem(title: "New File", action: nil, keyEquivalent: "")
+            parent.image = Self.menuIcon()
+            let sub = NSMenu(title: "")
+            for entry in entries { addRow(for: entry, to: sub) }
+            parent.submenu = sub
+            menu.addItem(parent)
+        } else {
+            for entry in entries { addRow(for: entry, to: menu) }
+        }
+        return menu
+    }
+
+    private func appendCustomizeRow(to menu: NSMenu) {
+        let item = NSMenuItem(
+            title: "Customize…",
+            action: #selector(openPreferences(_:)),
+            keyEquivalent: ""
+        )
+        item.target = self
+        menu.addItem(item)
+    }
+
+    private func appendEmptyRow(to menu: NSMenu) {
+        let item = NSMenuItem(
+            title: "Enable a file type in NewFile…",
+            action: #selector(openPreferences(_:)),
+            keyEquivalent: ""
+        )
+        item.target = self
+        menu.addItem(item)
+    }
+
+    @objc func openPreferences(_ sender: AnyObject?) {
+        log.info("openPreferences requested")
+        DistributedNotificationCenter.default().postNotificationName(
+            NewFileNotification.openPreferences,
+            object: nil, userInfo: nil, deliverImmediately: true
+        )
+        // Also activate host app in case it isn't running yet.
+        if let url = hostAppURL() {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    private func hostAppURL() -> URL? {
+        // Extension bundle is .../NewFile.app/Contents/PlugIns/NewFileExtension.appex.
+        // Walk up four levels to land on the host app.
+        let bundle = Bundle(for: FinderSync.self).bundleURL
+        return bundle
+            .deletingLastPathComponent()  // PlugIns
+            .deletingLastPathComponent()  // Contents
+            .deletingLastPathComponent()  // NewFile.app
     }
 
     private func addRow(for entry: FileTypeEntry, to menu: NSMenu) {
@@ -82,15 +148,6 @@ final class FinderSync: FIFinderSync {
     }
 
     // MARK: - Actions
-
-    @objc func createDefaultFile(_ sender: AnyObject?) {
-        // Used only when no settings/entries available — replicate legacy behavior.
-        let fallback = FileTypeEntry(
-            ext: "txt", baseName: "New Text File",
-            displayName: "New Text File", isBuiltIn: true
-        )
-        performCreate(entry: fallback)
-    }
 
     @objc func createFromMenuItem(_ sender: AnyObject?) {
         guard let item = sender as? NSMenuItem,
