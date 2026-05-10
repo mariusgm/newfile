@@ -6,8 +6,7 @@ private let log = Logger(subsystem: "dev.newfile.NewFile", category: "extension"
 
 final class FinderSync: FIFinderSync {
 
-    private static let baseName = "New Text File"
-    private static let fileExtension = "txt"
+    private let settings: SettingsStore? = SettingsStore.appGroupStore()
 
     override init() {
         super.init()
@@ -19,7 +18,7 @@ final class FinderSync: FIFinderSync {
 
     override var toolbarItemName: String { "NewFile" }
 
-    override var toolbarItemToolTip: String { "Create a new text file in this folder" }
+    override var toolbarItemToolTip: String { "Create a new file in this folder" }
 
     override var toolbarItemImage: NSImage {
         Self.toolbarIcon(accessibility: "New File")
@@ -29,13 +28,34 @@ final class FinderSync: FIFinderSync {
 
     override func menu(for menu: FIMenuKind) -> NSMenu? {
         let nsMenu = NSMenu(title: "")
-        let item = NSMenuItem(title: "New Text File",
-                              action: #selector(createNewFile(_:)),
-                              keyEquivalent: "")
+        let entries = settings?.enabledTypes ?? []
+
+        if let primary = entries.first {
+            addRow(for: primary, to: nsMenu)
+        } else {
+            // Fallback when no settings available or all disabled.
+            let item = NSMenuItem(
+                title: "New Text File",
+                action: #selector(createDefaultFile(_:)),
+                keyEquivalent: ""
+            )
+            item.target = self
+            item.image = Self.menuIcon()
+            nsMenu.addItem(item)
+        }
+        return nsMenu
+    }
+
+    private func addRow(for entry: FileTypeEntry, to menu: NSMenu) {
+        let item = NSMenuItem(
+            title: entry.displayName,
+            action: #selector(createFromMenuItem(_:)),
+            keyEquivalent: ""
+        )
         item.target = self
         item.image = Self.menuIcon()
-        nsMenu.addItem(item)
-        return nsMenu
+        item.representedObject = entry
+        menu.addItem(item)
     }
 
     private static func toolbarIcon(accessibility: String?) -> NSImage {
@@ -45,7 +65,6 @@ final class FinderSync: FIFinderSync {
             image.accessibilityDescription = accessibility
             return image
         }
-        // Fallback if asset is missing — keeps the toolbar item usable.
         let fallback = NSImage(systemSymbolName: "square.and.pencil",
                                accessibilityDescription: accessibility)
             ?? NSImage()
@@ -53,11 +72,6 @@ final class FinderSync: FIFinderSync {
         return fallback
     }
 
-    // Context-menu row uses the canonical macOS "compose" SF Symbol. Template
-    // tinting through the Finder-Sync extension XPC path is unreliable in
-    // current macOS, so we apply an explicit palette tint with the dynamic
-    // labelColor — resolves to ~white in dark menus, ~black in light menus,
-    // matching the system items above.
     private static func menuIcon() -> NSImage {
         guard let base = NSImage(systemSymbolName: "square.and.pencil",
                                  accessibilityDescription: "New File") else {
@@ -67,34 +81,46 @@ final class FinderSync: FIFinderSync {
         return base.withSymbolConfiguration(config) ?? base
     }
 
-    // MARK: - Action
+    // MARK: - Actions
 
-    private static let firstUseNotificationName =
-        Notification.Name("dev.newfile.NewFile.toolbarOrMenuUsed")
+    @objc func createDefaultFile(_ sender: AnyObject?) {
+        // Used only when no settings/entries available — replicate legacy behavior.
+        let fallback = FileTypeEntry(
+            ext: "txt", baseName: "New Text File",
+            displayName: "New Text File", isBuiltIn: true
+        )
+        performCreate(entry: fallback)
+    }
 
-    @objc func createNewFile(_ sender: AnyObject?) {
-        log.info("createNewFile invoked")
+    @objc func createFromMenuItem(_ sender: AnyObject?) {
+        guard let item = sender as? NSMenuItem,
+              let entry = item.representedObject as? FileTypeEntry else {
+            log.error("createFromMenuItem: missing representedObject")
+            NSSound.beep()
+            return
+        }
+        performCreate(entry: entry)
+    }
+
+    private func performCreate(entry: FileTypeEntry) {
+        log.info("create entry=\(entry.displayName, privacy: .public) ext=\(entry.ext, privacy: .public)")
         DistributedNotificationCenter.default().postNotificationName(
-            Self.firstUseNotificationName,
-            object: nil,
-            userInfo: nil,
-            deliverImmediately: true
+            NewFileNotification.toolbarOrMenuUsed,
+            object: nil, userInfo: nil, deliverImmediately: true
         )
 
         let controller = FIFinderSyncController.default()
         let target = controller.targetedURL()
         let selected = controller.selectedItemURLs()
-        log.info("targetedURL=\(target?.path ?? "nil", privacy: .public) selected=\(selected?.map { $0.path }.joined(separator: ", ") ?? "nil", privacy: .public)")
 
         guard let directory = directoryForCreation(target: target, selected: selected) else {
             log.error("No target directory available")
             NSSound.beep()
             return
         }
-        log.info("creating in directory=\(directory.path, privacy: .public)")
 
         do {
-            let url = try createUniqueFile(in: directory)
+            let url = try createFile(for: entry, in: directory)
             log.info("created file=\(url.path, privacy: .public)")
             revealFile(at: url)
         } catch {
@@ -104,6 +130,17 @@ final class FinderSync: FIFinderSync {
     }
 
     // MARK: - Helpers
+
+    private func createFile(for entry: FileTypeEntry, in directory: URL) throws -> URL {
+        let url = FilenameGenerator.uniqueFileURL(
+            in: directory, baseName: entry.baseName, ext: entry.ext
+        )
+        let scoped = directory.startAccessingSecurityScopedResource()
+        defer { if scoped { directory.stopAccessingSecurityScopedResource() } }
+        let data = entry.template.data(using: .utf8) ?? Data()
+        try data.write(to: url, options: [.withoutOverwriting])
+        return url
+    }
 
     private func directoryForCreation(target: URL?, selected: [URL]?) -> URL? {
         if let target { return resolvedDirectory(for: target) }
@@ -120,30 +157,10 @@ final class FinderSync: FIFinderSync {
         return url.deletingLastPathComponent()
     }
 
-    private func createUniqueFile(in directory: URL) throws -> URL {
-        let url = uniqueFileURL(in: directory,
-                                baseName: Self.baseName,
-                                ext: Self.fileExtension)
-        let scoped = directory.startAccessingSecurityScopedResource()
-        defer { if scoped { directory.stopAccessingSecurityScopedResource() } }
-        try Data().write(to: url, options: [.withoutOverwriting])
-        return url
-    }
-
-    private func uniqueFileURL(in directory: URL, baseName: String, ext: String) -> URL {
-        let fm = FileManager.default
-        var candidate = directory.appendingPathComponent("\(baseName).\(ext)")
-        var i = 2
-        while fm.fileExists(atPath: candidate.path) {
-            candidate = directory.appendingPathComponent("\(baseName) \(i).\(ext)")
-            i += 1
-        }
-        return candidate
-    }
-
     private func revealFile(at url: URL) {
-        // NSWorkspace from extension context: select via Finder app directly.
-        NSWorkspace.shared.selectFile(url.path,
-                                      inFileViewerRootedAtPath: url.deletingLastPathComponent().path)
+        NSWorkspace.shared.selectFile(
+            url.path,
+            inFileViewerRootedAtPath: url.deletingLastPathComponent().path
+        )
     }
 }
