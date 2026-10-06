@@ -20,7 +20,7 @@ final class SettingsStoreTests: XCTestCase {
     func testFirstRead_writesSchemaVersion() {
         let (store, defaults) = makeStore()
         _ = store.fileTypes
-        XCTAssertEqual(defaults.integer(forKey: "schemaVersion"), 2)
+        XCTAssertEqual(defaults.integer(forKey: "schemaVersion"), 3)
     }
 
     func testWriteAndReadBack() throws {
@@ -78,7 +78,7 @@ final class SettingsStoreTests: XCTestCase {
         let png = migrated.first { $0.ext == "png" }!
         XCTAssertEqual(png.displayName, "")
         XCTAssertEqual(png.menuTitle, "New .png")
-        XCTAssertEqual(defaults.integer(forKey: "schemaVersion"), 2)
+        XCTAssertEqual(defaults.integer(forKey: "schemaVersion"), 3)
         // Migration persisted: a fresh decode sees the blanked label too.
         let reread = try JSONDecoder().decode(
             [FileTypeEntry].self, from: defaults.data(forKey: "fileTypes")!)
@@ -107,6 +107,51 @@ final class SettingsStoreTests: XCTestCase {
         store.fileTypes = types
         XCTAssertEqual(store.fileTypes.first { $0.ext == "png" }!.displayName, "New file")
         _ = defaults
+    }
+
+    /// Schema 2 -> 3: existing users were seeded once, before RTF existed.
+    func testMigration_appendsRTFPresetDisabledForSchema2Stores() throws {
+        let (store, defaults) = makeStore()
+        let legacy = SeedPresets.builtIns.filter { $0.ext != "rtf" }
+        defaults.set(try JSONEncoder().encode(legacy), forKey: "fileTypes")
+        defaults.set(2, forKey: "schemaVersion")
+
+        let migrated = store.fileTypes
+        XCTAssertEqual(migrated.map(\.ext), legacy.map(\.ext) + ["rtf"])
+        XCTAssertFalse(migrated.last!.enabled)
+        XCTAssertEqual(defaults.integer(forKey: "schemaVersion"), 3)
+        let reread = try JSONDecoder().decode(
+            [FileTypeEntry].self, from: defaults.data(forKey: "fileTypes")!)
+        XCTAssertEqual(reread.last?.ext, "rtf")
+    }
+
+    /// A user who already added their own .rtf type keeps it, and gets no duplicate.
+    func testMigration_skipsRTFPresetWhenUserAlreadyHasRTF() throws {
+        let (store, defaults) = makeStore()
+        var types = SeedPresets.builtIns.filter { $0.ext != "rtf" }
+        types.append(FileTypeEntry(ext: "rtf", baseName: "", displayName: "",
+                                   enabled: true, isBuiltIn: false))
+        defaults.set(try JSONEncoder().encode(types), forKey: "fileTypes")
+        defaults.set(2, forKey: "schemaVersion")
+
+        let migrated = store.fileTypes
+        XCTAssertEqual(migrated.filter { $0.ext == "rtf" }.count, 1)
+        XCTAssertFalse(migrated.first { $0.ext == "rtf" }!.isBuiltIn)
+        XCTAssertEqual(defaults.integer(forKey: "schemaVersion"), 3)
+    }
+
+    /// Schema 1 stores get both migrations in one pass.
+    func testMigration_schema1RunsBothSteps() throws {
+        let (store, defaults) = makeStore()
+        var types = SeedPresets.builtIns.filter { $0.ext != "rtf" }
+        types.append(FileTypeEntry(ext: "png", baseName: "shot", displayName: "New file",
+                                   enabled: true, isBuiltIn: false))
+        defaults.set(try JSONEncoder().encode(types), forKey: "fileTypes")
+        defaults.set(1, forKey: "schemaVersion")
+
+        let migrated = store.fileTypes
+        XCTAssertEqual(migrated.first { $0.ext == "png" }!.displayName, "")
+        XCTAssertEqual(migrated.last?.ext, "rtf")
     }
 
     func testCorruptedJSON_fallsBackToSeeds() {

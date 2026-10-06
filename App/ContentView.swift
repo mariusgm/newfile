@@ -59,21 +59,34 @@ struct ContentView: View {
                             prominent: !status.extensionEnabled
                         )
                     )
+                    // Checkmark stays on hasUsedAction: it's the only in-app proof
+                    // the extension actually fired end to end.
                     StepView(
                         badge: .number(2, isComplete: status.hasUsedAction),
-                        title: "Use it",
+                        title: "Add and customize file types",
                         description: .twoLine(
-                            primary: "Right-click anywhere in a Finder window → New Text File.",
-                            secondary: "Creates New Text File.txt, auto-numbered if one already exists."
+                            primary: "Choose which file types appear when you right-click in a Finder window.",
+                            secondary: status.hasUsedAction
+                                ? "Working — NewFile has created a file from Finder."
+                                : "Then right-click in any folder → New Text File. The check appears once NewFile creates a file."
                         ),
-                        primaryButton: nil
+                        primaryButton: PrimaryButton(
+                            title: "Customize File Types…",
+                            action: { PreferencesWindowController.shared.show() },
+                            // One loud button at a time: step 1 owns it until the
+                            // extension is on.
+                            prominent: status.extensionEnabled && !status.hasUsedAction
+                        )
                     )
                 }
                 StepView(
                     badge: .optional,
                     title: "Add a toolbar button",
                     titlePrefix: "OPTIONAL",
-                    description: .path("View → Customize Toolbar… → drag the NewFile icon into the toolbar."),
+                    description: .pathWithNote(
+                        path: "View → Customize Toolbar… → drag the NewFile icon into the toolbar.",
+                        note: "Use the toolbar button in iCloud Drive folders — macOS hides right-click items from other apps there."
+                    ),
                     primaryButton: nil
                 )
                 .padding(.top, 40)
@@ -133,6 +146,7 @@ private struct PrimaryButton {
 private enum StepDescription {
     case path(String)
     case twoLine(primary: String, secondary: String)
+    case pathWithNote(path: String, note: String)
 }
 
 private enum StepBadgeKind {
@@ -210,6 +224,15 @@ private struct StepView: View {
             Text(text)
                 .font(.system(.callout, design: .monospaced))
                 .foregroundStyle(.secondary)
+        case .pathWithNote(let path, let note):
+            VStack(alignment: .leading, spacing: 2) {
+                Text(path)
+                    .font(.system(.callout, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                Text(note)
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
         case .twoLine(let primary, let secondary):
             VStack(alignment: .leading, spacing: 2) {
                 Text(primary)

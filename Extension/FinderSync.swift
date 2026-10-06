@@ -168,10 +168,6 @@ final class FinderSync: FIFinderSync {
 
     private func performCreate(entry: FileTypeEntry) {
         log.info("create entry=\(entry.menuTitle, privacy: .public) ext=\(entry.ext, privacy: .public)")
-        DistributedNotificationCenter.default().postNotificationName(
-            NewFileNotification.toolbarOrMenuUsed,
-            object: nil, userInfo: nil, deliverImmediately: true
-        )
 
         let controller = FIFinderSyncController.default()
         let target = controller.targetedURL()
@@ -186,6 +182,12 @@ final class FinderSync: FIFinderSync {
         do {
             let url = try createFile(for: entry, in: directory)
             log.info("created file=\(url.path, privacy: .public)")
+            // Posted only after a successful write: the setup window's step 2
+            // checkmark reads this as "NewFile has created a file".
+            DistributedNotificationCenter.default().postNotificationName(
+                NewFileNotification.toolbarOrMenuUsed,
+                object: nil, userInfo: nil, deliverImmediately: true
+            )
             revealFile(at: url)
         } catch {
             log.error("create failed: \(error.localizedDescription, privacy: .public)")

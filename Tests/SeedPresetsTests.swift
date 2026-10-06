@@ -7,7 +7,7 @@ final class SeedPresetsTests: XCTestCase {
 
     func testSeed_orderMatchesSpec() {
         let exts = SeedPresets.builtIns.map { $0.ext }
-        XCTAssertEqual(exts, ["txt", "md", "env", "json", "yml", "sh", "gitignore", "html"])
+        XCTAssertEqual(exts, ["txt", "md", "env", "json", "yml", "sh", "gitignore", "html", "rtf"])
     }
 
     func testSeed_onlyTxtEnabled() {
@@ -31,8 +31,16 @@ final class SeedPresetsTests: XCTestCase {
         XCTAssertTrue(SeedPresets.builtIns.allSatisfy { $0.isBuiltIn })
     }
 
-    func testSeed_allTemplatesEmpty() {
-        XCTAssertTrue(SeedPresets.builtIns.allSatisfy { $0.template.isEmpty })
+    func testSeed_templatesEmptyExceptRTF() {
+        XCTAssertTrue(SeedPresets.builtIns.filter { $0.ext != "rtf" }.allSatisfy { $0.template.isEmpty })
+    }
+
+    /// An empty .rtf is not a valid RTF document (issue #4) — the preset must
+    /// carry the minimal header so TextEdit opens it as rich text.
+    func testSeed_rtfHasMinimalRTFTemplateAndBaseName() {
+        let rtf = SeedPresets.builtIns.first { $0.ext == "rtf" }
+        XCTAssertEqual(rtf?.template, "{\\rtf1}")
+        XCTAssertEqual(rtf?.baseName, "Untitled")
     }
 
     func testSeed_displayNamesNonEmpty() {

@@ -13,7 +13,7 @@ final class SettingsStore {
         static let pendingOpenPreferences = "pendingOpenPreferences"
     }
 
-    private static let currentSchema = 2
+    private static let currentSchema = 3
 
     private let defaults: UserDefaults
 
@@ -69,14 +69,23 @@ final class SettingsStore {
 
     /// Schema 1 -> 2: custom types were created with a hardcoded displayName
     /// of "New file" and no UI to change it (issue #2). Blank those out so the
-    /// menu falls back to the ext-derived label. Runs once, keyed on
-    /// schemaVersion, so a label the user later types as "New file" sticks.
+    /// menu falls back to the ext-derived label.
+    /// Schema 2 -> 3: append the RTF built-in (issue #4) — the seed only runs on
+    /// first read, so existing stores never got it. Skipped when the user already
+    /// has an .rtf type of their own.
+    /// Each step runs once, keyed on schemaVersion, so later user edits stick.
     private func migrateIfNeeded(_ types: [FileTypeEntry]) -> [FileTypeEntry] {
-        guard defaults.integer(forKey: Key.schema) < 2 else { return types }
+        let schema = defaults.integer(forKey: Key.schema)
+        guard schema < Self.currentSchema else { return types }
         var migrated = types
-        for i in migrated.indices
-        where !migrated[i].isBuiltIn && migrated[i].displayName == "New file" {
-            migrated[i].displayName = ""
+        if schema < 2 {
+            for i in migrated.indices
+            where !migrated[i].isBuiltIn && migrated[i].displayName == "New file" {
+                migrated[i].displayName = ""
+            }
+        }
+        if schema < 3, !migrated.contains(where: { $0.ext == SeedPresets.rtf.ext }) {
+            migrated.append(SeedPresets.rtf)
         }
         if migrated != types { persist(migrated) }
         defaults.set(Self.currentSchema, forKey: Key.schema)

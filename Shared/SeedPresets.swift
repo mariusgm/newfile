@@ -10,5 +10,12 @@ enum SeedPresets {
         FileTypeEntry(ext: "sh",        baseName: "script",        displayName: "New Shell Script",  enabled: false, isBuiltIn: true),
         FileTypeEntry(ext: "gitignore", baseName: "",              displayName: "New .gitignore",    enabled: false, isBuiltIn: true),
         FileTypeEntry(ext: "html",      baseName: "index",         displayName: "New HTML",          enabled: false, isBuiltIn: true),
+        rtf,
     ]
+
+    /// An empty .rtf isn't a valid RTF document (issue #4); `{\rtf1}` is the
+    /// minimal header TextEdit opens as rich text. Exposed separately so the
+    /// schema 2 -> 3 migration can append it for stores seeded before it existed.
+    static let rtf = FileTypeEntry(ext: "rtf", baseName: "Untitled", displayName: "New Rich Text",
+                                   template: "{\\rtf1}", enabled: false, isBuiltIn: true)
 }

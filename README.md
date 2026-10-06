@@ -33,6 +33,10 @@ System Settings → **General → Login Items & Extensions** → scroll to **Add
 
 > On macOS Sequoia 15.0 and 15.1 the Extensions UI was buggy — update to 15.2 or later if NewFile Extension doesn't appear in the toggle list.
 
+> On macOS 27 "Golden Gate" this pane was reworked to list only Finder Sync and File Provider
+> extensions. NewFile has not been walked through on 27 yet — if the toggle doesn't appear, please
+> [open an issue](https://github.com/mariusgm/newfile/issues).
+
 ## Add the toolbar button
 
 In any Finder window: **View → Customize Toolbar…** → drag the NewFile icon into the toolbar where you want it.
@@ -44,9 +48,13 @@ In any Finder window: **View → Customize Toolbar…** → drag the NewFile ico
 
 The created file is named `New Text File.txt`. If that name exists, it becomes `New Text File 2.txt`, then `New Text File 3.txt`, and so on.
 
+### iCloud Drive: use the toolbar button
+
+On recent macOS versions, Finder doesn't show right-click items from third-party Finder extensions inside **iCloud Drive** folders — including Desktop and Documents when they sync to iCloud. Finder Sync extensions were designed around a folder each extension owns, and iCloud Drive manages these folders itself ([Apple Developer Forums](https://developer.apple.com/forums/thread/737283)). Other Finder Sync apps report the same behavior. We haven't identified a supported Finder Sync workaround that restores the right-click menu there. **The toolbar button works in iCloud Drive** — add it once (above) and use it there.
+
 ## Customize
 
-Open **NewFile.app → ⌘,** (or click the toolbar dropdown → **Customize…**) to manage file types, templates, menu order, and submenu mode. Each type has an editable **menu label** (what Finder shows) and a **default filename**; leave the filename empty for dotfile-style names (`.env`, `.gitignore`). The **Add…/Edit…** button per row manages that type's starter template.
+Open **NewFile.app → ⌘,** (or click the toolbar dropdown → **Customize…**) to manage file types, templates, menu order, and submenu mode. Each type has an editable **menu label** (what Finder shows) and a **default filename**; leave the filename empty for dotfile-style names (`.env`, `.gitignore`). A **Rich Text (.rtf)** type ships with a minimal RTF header so the file opens in TextEdit; an empty `.rtf` isn't a valid RTF document. The **Add…/Edit…** button per row manages that type's starter template.
 
 ## Build from source
 
