@@ -14,8 +14,8 @@ enum SeedPresets {
     ]
 
     /// An empty .rtf isn't a valid RTF document (issue #4); `{\rtf1}` is the
-    /// minimal header TextEdit opens as rich text. Exposed separately so the
-    /// schema 2 -> 3 migration can append it for stores seeded before it existed.
+    /// minimal header TextEdit opens as rich text. Existing stores get it via
+    /// `SettingsStore.ensureBuiltIns`.
     static let rtf = FileTypeEntry(ext: "rtf", baseName: "Untitled", displayName: "New Rich Text",
                                    template: "{\\rtf1}", enabled: false, isBuiltIn: true)
 }

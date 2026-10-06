@@ -34,7 +34,7 @@ final class SettingsStore {
         get {
             if let data = defaults.data(forKey: Key.fileTypes),
                let decoded = try? JSONDecoder().decode([FileTypeEntry].self, from: data) {
-                return migrateIfNeeded(decoded)
+                return ensureBuiltIns(migrateIfNeeded(decoded))
             }
             // First read or corrupted JSON — seed and persist.
             let seeded = SeedPresets.builtIns
@@ -70,9 +70,8 @@ final class SettingsStore {
     /// Schema 1 -> 2: custom types were created with a hardcoded displayName
     /// of "New file" and no UI to change it (issue #2). Blank those out so the
     /// menu falls back to the ext-derived label.
-    /// Schema 2 -> 3: append the RTF built-in (issue #4) — the seed only runs on
-    /// first read, so existing stores never got it. Skipped when the user already
-    /// has an .rtf type of their own.
+    /// Schema 3 (0.2.4) adds the RTF built-in; that is handled by
+    /// `ensureBuiltIns`, not here, so the stamp only marks the version.
     /// Each step runs once, keyed on schemaVersion, so later user edits stick.
     private func migrateIfNeeded(_ types: [FileTypeEntry]) -> [FileTypeEntry] {
         let schema = defaults.integer(forKey: Key.schema)
@@ -84,12 +83,26 @@ final class SettingsStore {
                 migrated[i].displayName = ""
             }
         }
-        if schema < 3, !migrated.contains(where: { $0.ext == SeedPresets.rtf.ext }) {
-            migrated.append(SeedPresets.rtf)
-        }
         if migrated != types { persist(migrated) }
         defaults.set(Self.currentSchema, forKey: Key.schema)
         return migrated
+    }
+
+    /// Appends any built-in preset missing from the store (disabled, as seeded).
+    /// The seed only runs on first read, so presets added in later versions
+    /// (RTF, issue #4) reach existing users here. Built-ins can't be deleted or
+    /// have their extension edited in the UI, so a missing one is never a user
+    /// choice. Runs on every read rather than once: a one-shot step that skipped
+    /// users with a custom .rtf stranded them with no RTF type after they
+    /// deleted it. A custom type with the same extension is kept alongside.
+    private func ensureBuiltIns(_ types: [FileTypeEntry]) -> [FileTypeEntry] {
+        let missing = SeedPresets.builtIns.filter { preset in
+            !types.contains { $0.isBuiltIn && $0.ext == preset.ext }
+        }
+        guard !missing.isEmpty else { return types }
+        let restored = types + missing
+        persist(restored)
+        return restored
     }
 
     private func persist(_ types: [FileTypeEntry]) {

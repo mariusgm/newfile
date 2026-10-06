@@ -125,8 +125,10 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(reread.last?.ext, "rtf")
     }
 
-    /// A user who already added their own .rtf type keeps it, and gets no duplicate.
-    func testMigration_skipsRTFPresetWhenUserAlreadyHasRTF() throws {
+    /// A user who already added their own .rtf type keeps it AND gets the
+    /// built-in (off) — skipping it stranded users who later deleted the custom
+    /// one with no RTF type at all (found in the 0.2.4 walkthrough).
+    func testMigration_customRTFKeptAndBuiltInAdded() throws {
         let (store, defaults) = makeStore()
         var types = SeedPresets.builtIns.filter { $0.ext != "rtf" }
         types.append(FileTypeEntry(ext: "rtf", baseName: "", displayName: "",
@@ -135,9 +137,42 @@ final class SettingsStoreTests: XCTestCase {
         defaults.set(2, forKey: "schemaVersion")
 
         let migrated = store.fileTypes
-        XCTAssertEqual(migrated.filter { $0.ext == "rtf" }.count, 1)
-        XCTAssertFalse(migrated.first { $0.ext == "rtf" }!.isBuiltIn)
+        let rtfs = migrated.filter { $0.ext == "rtf" }
+        XCTAssertEqual(rtfs.count, 2)
+        XCTAssertTrue(rtfs.contains { !$0.isBuiltIn && $0.enabled })
+        XCTAssertTrue(rtfs.contains { $0.isBuiltIn && !$0.enabled })
         XCTAssertEqual(defaults.integer(forKey: "schemaVersion"), 3)
+    }
+
+    /// The exact state the walkthrough produced: schema already 3, the custom
+    /// .rtf deleted, no built-in. The next read must restore the built-in.
+    func testMissingBuiltIn_restoredOnReadAtCurrentSchema() throws {
+        let (store, defaults) = makeStore()
+        let stranded = SeedPresets.builtIns.filter { $0.ext != "rtf" }
+        defaults.set(try JSONEncoder().encode(stranded), forKey: "fileTypes")
+        defaults.set(3, forKey: "schemaVersion")
+
+        let types = store.fileTypes
+        XCTAssertEqual(types.filter { $0.ext == "rtf" && $0.isBuiltIn }.count, 1)
+        let reread = try JSONDecoder().decode(
+            [FileTypeEntry].self, from: defaults.data(forKey: "fileTypes")!)
+        XCTAssertTrue(reread.contains { $0.ext == "rtf" && $0.isBuiltIn })
+    }
+
+    /// Restoring is idempotent and leaves user edits to built-ins alone.
+    func testBuiltInRestore_noDuplicatesAndKeepsEdits() {
+        let (store, _) = makeStore()
+        var types = store.fileTypes
+        let i = types.firstIndex { $0.ext == "rtf" }!
+        types[i].enabled = true
+        types[i].baseName = "Notes"
+        store.fileTypes = types
+
+        _ = store.fileTypes
+        let again = store.fileTypes
+        XCTAssertEqual(again.filter { $0.ext == "rtf" }.count, 1)
+        XCTAssertEqual(again.first { $0.ext == "rtf" }!.baseName, "Notes")
+        XCTAssertTrue(again.first { $0.ext == "rtf" }!.enabled)
     }
 
     /// Schema 1 stores get both migrations in one pass.
