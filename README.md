@@ -11,7 +11,9 @@
 
 > macOS Finder lets you create a New Folder but not a New File. NewFile fixes that — the way it should have shipped.
 
-![NewFile demo — right-click in Finder to create a new file](.github/assets/demo.gif)
+<p align="center">
+  <img src=".github/assets/demo.gif" alt="NewFile demo — right-click in Finder to create a new file">
+</p>
 
 ## Install
 
