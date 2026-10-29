@@ -113,6 +113,10 @@ When you click the toolbar button or context menu item:
 
 [MIT](LICENSE) — do whatever, no warranty.
 
+## Support
+
+NewFile is free and stays free. If it saves you time, you can [sponsor its development](https://github.com/sponsors/mariusgm).
+
 ## Related
 
 - [MacNewFile](https://github.com/GarfieldFluffJr/MacNewFile) — older Objective-C implementation of the same idea
