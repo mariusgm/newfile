@@ -23,6 +23,8 @@
 brew install mariusgm/newfile/newfile
 ```
 
+Then launch NewFile once (`open -a NewFile`). macOS only registers the Finder extension after the app's first launch — until then the toggle below won't appear.
+
 ### Manual
 
 1. Download the latest `NewFile.dmg` from [Releases](https://github.com/mariusgm/newfile/releases).
@@ -30,6 +32,8 @@ brew install mariusgm/newfile/newfile
 3. Launch it once. Follow the in-app instructions to enable the Finder extension.
 
 ## Enable the Finder extension (one time)
+
+NewFile must have been launched at least once first.
 
 System Settings → **General → Login Items & Extensions** → scroll to **Added Extensions** → toggle **NewFile Extension**.
 
