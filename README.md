@@ -35,12 +35,14 @@ Then launch NewFile once (`open -a NewFile`). macOS only registers the Finder ex
 
 NewFile must have been launched at least once first.
 
-System Settings → **General → Login Items & Extensions** → scroll to **Added Extensions** → toggle **NewFile Extension**.
+Open System Settings → **General → Login Items & Extensions**, then:
+
+- **macOS 27 "Golden Gate":** under **Extensions**, choose **By Category**, click the ⓘ next to **File Providers**, and turn on **NewFile**. macOS lists NewFile there rather than under Finder.
+- **macOS 26 and earlier:** scroll to **Added Extensions** and toggle **NewFile Extension**.
 
 > On macOS Sequoia 15.0 and 15.1 the Extensions UI was buggy — update to 15.2 or later if NewFile Extension doesn't appear in the toggle list.
 
-> On macOS 27 "Golden Gate" this pane was reworked to list only Finder Sync and File Provider
-> extensions. NewFile has not been walked through on 27 yet — if the toggle doesn't appear, please
+> If NewFile doesn't appear under File Providers on macOS 27, please
 > [open an issue](https://github.com/mariusgm/newfile/issues).
 
 ## Add the toolbar button
@@ -95,7 +97,7 @@ Quitting NewFile doesn't stop the Finder extension — Finder keeps it running a
 
 **Manual (DMG install):**
 1. Quit NewFile (⌘Q).
-2. System Settings → General → Login Items & Extensions → Extensions → Finder extensions → uncheck **NewFile**.
+2. Turn off NewFile in System Settings → General → Login Items & Extensions. The toggle's location depends on your macOS version: see [Enable the Finder extension](#enable-the-finder-extension-one-time).
 3. Drag NewFile.app from Applications to the Trash.
 4. Optional — remove saved settings: delete `~/Library/Group Containers/Q7VD7MTRL8.dev.newfile.NewFile`.
 
