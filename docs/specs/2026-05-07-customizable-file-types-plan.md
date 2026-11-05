@@ -27,7 +27,7 @@
   ```
   Then verify in Finder. Toggle the extension on at System Settings → General → Login Items & Extensions → Extensions if needed (only required once after a fresh install).
 - **NSMenuItem.representedObject does NOT survive the FinderSync XPC bridge.** Finder marshals the menu out to display, then back in to invoke the action — Swift structs (and any non-NSCoding-conformant value) silently drop to nil on the return trip. **Dispatch by `item.tag`** keyed into a snapshot array stored on `self`, never via `representedObject`. See Task 7 / Task 8 implementations.
-- **Prerequisite:** AI-NODE-01 must be registered in team `Q7VD7MTRL8`'s device list (developer.apple.com → Devices) using the **Provisioning UDID** (not Hardware UUID). The App Group entitlement requires a provisioning profile that includes this device.
+- **Prerequisite:** the build Mac must be registered in team `Q7VD7MTRL8`'s device list (developer.apple.com → Devices) using the **Provisioning UDID** (not Hardware UUID). The App Group entitlement requires a provisioning profile that includes this device.
 - **Commit style:** match existing repo (`feat:`, `refactor:`, `test:`, `chore:`, `docs:` with scope when helpful, e.g. `extension:`, `app:`, `settings:`).
 - **Commit author:** the repo's git config controls this; do not override on the command line.
 - **Do not push** unless explicitly told.
@@ -158,7 +158,7 @@ with:
         CODE_SIGNING_ALLOWED: NO
 ```
 
-The test target is intentionally **standalone and unsigned**: no `TEST_HOST`, no `BUNDLE_LOADER`, no `dependencies` on the host app. `Shared/` is compiled directly into the test bundle, so test files reference types like `FileTypeEntry` and `SettingsStore` without `@testable import NewFile`. Trade-off: tests cannot reach into private symbols of the `NewFile` app target (we don't need to — every type under test lives in `Shared/`), and this target won't carry UI tests if we ever add them. Reason: the App Group entitlement on the host app would require AI-NODE-01 to be registered in team `Q7VD7MTRL8`'s device list, and `-allowProvisioningUpdates` cannot mint a Mac App Development profile for an unregistered device. Keeping the test target unsigned removes the dependency entirely.
+The test target is intentionally **standalone and unsigned**: no `TEST_HOST`, no `BUNDLE_LOADER`, no `dependencies` on the host app. `Shared/` is compiled directly into the test bundle, so test files reference types like `FileTypeEntry` and `SettingsStore` without `@testable import NewFile`. Trade-off: tests cannot reach into private symbols of the `NewFile` app target (we don't need to — every type under test lives in `Shared/`), and this target won't carry UI tests if we ever add them. Reason: the App Group entitlement on the host app would require the build Mac to be registered in team `Q7VD7MTRL8`'s device list, and `-allowProvisioningUpdates` cannot mint a Mac App Development profile for an unregistered device. Keeping the test target unsigned removes the dependency entirely.
 
 (d) The App Group entitlement requires a real Apple Development certificate — ad-hoc signing (`CODE_SIGN_IDENTITY: "-"`) cannot carry `application-groups`. Update the Debug config under `settings.configs`. Replace:
 
@@ -176,7 +176,7 @@ with:
       CODE_SIGN_IDENTITY: "Apple Development"
 ```
 
-The `DEVELOPMENT_TEAM: Q7VD7MTRL8` already in `settings.base` lets Xcode auto-provision a dev profile for the host app and extension. (Note: AI-NODE-01 must be registered in team `Q7VD7MTRL8`'s device list for **build** runs of the host app to succeed via CLI — see Task 7's manual smoke step. Test runs do not require this.)
+The `DEVELOPMENT_TEAM: Q7VD7MTRL8` already in `settings.base` lets Xcode auto-provision a dev profile for the host app and extension. (Note: the build Mac must be registered in team `Q7VD7MTRL8`'s device list for **build** runs of the host app to succeed via CLI — see Task 7's manual smoke step. Test runs do not require this.)
 
 - [ ] **Step 5: Write a smoke test**
 
