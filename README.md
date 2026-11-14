@@ -1,5 +1,7 @@
 # NewFile — New File button for macOS Finder
 
+By [mariusgm](https://github.com/mariusgm) · [newfile.dev](https://newfile.dev)
+
 **Free, open-source, native.** A small [Finder Sync Extension](https://developer.apple.com/documentation/findersync/fifindersync) that adds the missing "New File" button to macOS Finder — right-click menu and toolbar. No Automator, no shell scripts, no setup beyond enabling the extension once.
 
 - **Any file type** — `.txt` enabled by default, plus 7 built-in presets (`.md`, `.json`, `.sh`, `.env`, `.yml`, `.gitignore`, `.html`). Add your own (`.tsx`, `.toml`, whatever you need).
@@ -16,6 +18,8 @@
 </p>
 
 ## Install
+
+NewFile is not on the Mac App Store. Install it with Homebrew or the DMG below.
 
 ### Homebrew (recommended)
 
