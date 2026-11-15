@@ -61,8 +61,10 @@ struct FileTypeRow: View {
         }
         .onAppear {
             // A just-added custom row (no extension yet) is ready to type into.
+            // Set on the next run-loop turn: set during onAppear, the request
+            // was dropped and focus fell to the window's first text field.
             if !entry.isBuiltIn && entry.ext.isEmpty {
-                extFocused = true
+                DispatchQueue.main.async { extFocused = true }
             }
         }
     }
