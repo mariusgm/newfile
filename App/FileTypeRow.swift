@@ -133,7 +133,7 @@ struct FileTypeRow: View {
                         RoundedRectangle(cornerRadius: 4)
                             .stroke(extError == nil ? .clear : .red, lineWidth: 1)
                     )
-                    .help(extError ?? "File extension (a-z, 0-9, . _ -)")
+                    .help(extError ?? "File extension (letters, 0-9, . _ -)")
             }
         }
     }
@@ -156,7 +156,7 @@ struct FileTypeRow: View {
         switch err {
         case .empty: return "Extension cannot be empty"
         case .tooLong: return "Extension too long (max 16 chars)"
-        case .badCharacters: return "Allowed: a-z, 0-9, . _ -"
+        case .badCharacters: return "Allowed: letters, 0-9, . _ -"
         }
     }
 }
