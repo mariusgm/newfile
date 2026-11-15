@@ -117,6 +117,7 @@ struct PreferencesView: View {
         }
         .padding(20)
         .frame(minWidth: 660, minHeight: 560)
+        .background(InitialFocusClearer())
     }
 
     /// Column captions for the row fields. Mirrors FileTypeRow's fixed widths
@@ -189,4 +190,48 @@ private struct RowReorderDelegate: DropDelegate {
 
 #Preview {
     PreferencesView()
+}
+
+/// Opens Preferences with no text field focused. When the window is shown,
+/// its first text field (the .txt menu label) became first responder with all
+/// its text selected, so the next keystroke replaced it. This clears that when
+/// the view first lands in its window and each time the window is shown again
+/// after being closed (SwiftUI reuses the Settings window). Switching apps
+/// leaves focus alone; clicking or tabbing into a field works as before.
+private struct InitialFocusClearer: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView { ClearerView() }
+    func updateNSView(_ nsView: NSView, context: Context) {}
+
+    private final class ClearerView: NSView {
+        private var reopenedAfterClose = false
+        private var observers: [NSObjectProtocol] = []
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            observers.forEach(NotificationCenter.default.removeObserver)
+            observers = []
+            guard let window else { return }
+            clearTextFocus(in: window)
+            let center = NotificationCenter.default
+            observers.append(center.addObserver(
+                forName: NSWindow.willCloseNotification, object: window, queue: .main
+            ) { [weak self] _ in self?.reopenedAfterClose = true })
+            observers.append(center.addObserver(
+                forName: NSWindow.didBecomeKeyNotification, object: window, queue: .main
+            ) { [weak self, weak window] _ in
+                guard let self, let window, self.reopenedAfterClose else { return }
+                self.reopenedAfterClose = false
+                self.clearTextFocus(in: window)
+            })
+        }
+
+        private func clearTextFocus(in window: NSWindow) {
+            DispatchQueue.main.async { [weak window] in
+                guard let window, window.firstResponder is NSText else { return }
+                window.makeFirstResponder(nil)
+            }
+        }
+
+        deinit { observers.forEach(NotificationCenter.default.removeObserver) }
+    }
 }

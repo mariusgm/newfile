@@ -13,6 +13,9 @@ final class PreferencesWindowController {
         NSApp.activate(ignoringOtherApps: true)
         if let window {
             window.makeKeyAndOrderFront(nil)
+            // The window is reused, and showing it again focuses its first
+            // text field. Clear that so reopening never lands in a field.
+            window.makeFirstResponder(nil)
             return
         }
         let host = NSHostingController(rootView: PreferencesView())
