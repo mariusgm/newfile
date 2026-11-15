@@ -6,6 +6,8 @@ import SwiftUI
 struct NewFileApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
+    private static let sponsorsURL = URL(string: "https://github.com/sponsors/mariusgm")!
+
     private let updaterController = SPUStandardUpdaterController(
         startingUpdater: true,
         updaterDelegate: nil,
@@ -24,6 +26,11 @@ struct NewFileApp: App {
                     updaterController.checkForUpdates(nil)
                 }
                 Divider()
+                // Tip link only: opens the GitHub Sponsors page in the browser.
+                // Leave it out of any Mac App Store build (App Review 3.1.1).
+                Button("Support NewFile…") {
+                    NSWorkspace.shared.open(Self.sponsorsURL)
+                }
                 Button("Uninstall NewFile…") {
                     UninstallHelper.run()
                 }
