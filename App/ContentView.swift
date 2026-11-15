@@ -40,6 +40,16 @@ struct ContentView: View {
 
     private let horizontalPadding: CGFloat = 32
 
+    /// macOS 27 moved the toggle: NewFile is listed under File Providers in the
+    /// By Category view, and "Added Extensions" is gone (issue #10). Earlier
+    /// versions keep the original path.
+    private static var extensionSettingsPath: String {
+        if #available(macOS 27, *) {
+            return "System Settings → General → Login Items & Extensions → Extensions → By Category → ⓘ next to File Providers → turn on NewFile."
+        }
+        return "System Settings → General → Login Items & Extensions → Added Extensions → toggle NewFile Extension."
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
@@ -50,7 +60,7 @@ struct ContentView: View {
                     StepView(
                         badge: .number(1, isComplete: status.extensionEnabled),
                         title: "Enable the Finder extension",
-                        description: .path("System Settings → General → Login Items & Extensions → Added Extensions → toggle NewFile Extension."),
+                        description: .path(Self.extensionSettingsPath),
                         primaryButton: PrimaryButton(
                             title: status.extensionEnabled
                                 ? "Manage in System Settings"
