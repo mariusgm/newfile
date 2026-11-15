@@ -89,4 +89,19 @@ final class FilenameGeneratorTests: XCTestCase {
             fileExists: { _ in false })
         XCTAssertEqual(url.lastPathComponent, "config.yml")
     }
+
+    // Issue #7: the extension's case reaches the filename unchanged.
+    func testUppercaseExtension_keptInFilename() {
+        let url = FilenameGenerator.uniqueFileURL(
+            in: URL(fileURLWithPath: "/tmp"), baseName: "Untitled", ext: "R",
+            fileExists: { _ in false })
+        XCTAssertEqual(url.lastPathComponent, "Untitled.R")
+    }
+
+    func testUppercaseExtension_redundantSuffixStrippedIgnoringCase() {
+        let url = FilenameGenerator.uniqueFileURL(
+            in: URL(fileURLWithPath: "/tmp"), baseName: "analysis.r", ext: "R",
+            fileExists: { _ in false })
+        XCTAssertEqual(url.lastPathComponent, "analysis.R")
+    }
 }

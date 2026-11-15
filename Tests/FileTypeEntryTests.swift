@@ -7,11 +7,17 @@ final class FileTypeEntryTests: XCTestCase {
 
     // MARK: - Validation
 
-    func testValidate_simpleExtension_returnsTrimmedLowercase() {
+    func testValidate_simpleExtension_returnsTrimmed() {
         XCTAssertEqual(try FileTypeEntry.validateExtension("md"), "md")
-        XCTAssertEqual(try FileTypeEntry.validateExtension("MD"), "md")
         XCTAssertEqual(try FileTypeEntry.validateExtension(".md"), "md")
-        XCTAssertEqual(try FileTypeEntry.validateExtension("  .MD  "), "md")
+        XCTAssertEqual(try FileTypeEntry.validateExtension("  .md  "), "md")
+    }
+
+    // Issue #7: `.R` used to be saved as `.r`, so files came out as `Untitled.r`.
+    func testValidate_keepsUppercase() {
+        XCTAssertEqual(try FileTypeEntry.validateExtension("R"), "R")
+        XCTAssertEqual(try FileTypeEntry.validateExtension(".Rproj"), "Rproj")
+        XCTAssertEqual(try FileTypeEntry.validateExtension("  .MD  "), "MD")
     }
 
     func testValidate_compoundExtensionsAllowed() {
