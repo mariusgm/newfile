@@ -26,7 +26,7 @@ xcodegen generate          # regenerate NewFile.xcodeproj from project.yml
 xcrun xcodebuild -scheme NewFile -configuration Release
 ```
 
-Version lives in `project.yml` (`MARKETING_VERSION` / `CURRENT_PROJECT_VERSION`), currently 0.2.4 / 6, Swift 5.10. Latest tag is `v0.2.4` (released 2026-10-06). `release/` carries the archive, DMG, `ExportOptions.plist`, `resume-notarization.sh` and a per-version runbook — read the runbook before cutting a release.
+Version lives in `project.yml` (`MARKETING_VERSION` / `CURRENT_PROJECT_VERSION`), currently 0.2.5 / 7 (unreleased), Swift 5.10. Latest tag is `v0.2.4` (released 2026-10-06). `release/` carries the archive, DMG, `ExportOptions.plist`, `resume-notarization.sh` and a per-version runbook — read the runbook before cutting a release.
 
 ## Release mechanics (verified 2026-09-02, v0.2.2)
 
