@@ -117,6 +117,7 @@ struct PreferencesView: View {
         }
         .padding(20)
         .frame(minWidth: 660, minHeight: 560)
+        .background(InitialFocusClearer())
     }
 
     /// Column captions for the row fields. Mirrors FileTypeRow's fixed widths
@@ -189,4 +190,25 @@ private struct RowReorderDelegate: DropDelegate {
 
 #Preview {
     PreferencesView()
+}
+
+/// Opens Preferences with no text field focused. When the window is shown,
+/// its first text field (the .txt menu label) became first responder with all
+/// its text selected, so the next keystroke replaced it. This clears that once,
+/// right after the view lands in its window; clicking or tabbing into a field
+/// works as before.
+private struct InitialFocusClearer: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView { ClearerView() }
+    func updateNSView(_ nsView: NSView, context: Context) {}
+
+    private final class ClearerView: NSView {
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard let window else { return }
+            DispatchQueue.main.async { [weak window] in
+                guard let window, window.firstResponder is NSText else { return }
+                window.makeFirstResponder(nil)
+            }
+        }
+    }
 }
