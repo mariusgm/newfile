@@ -35,10 +35,14 @@ struct NewFileApp: App {
                     UninstallHelper.run()
                 }
             }
-        }
-
-        Settings {
-            PreferencesView()
+            // One Settings window for every entry point (see
+            // PreferencesWindowController); no SwiftUI Settings scene.
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") {
+                    PreferencesWindowController.shared.show()
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
         }
     }
 }

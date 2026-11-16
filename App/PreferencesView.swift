@@ -56,8 +56,9 @@ final class PreferencesViewModel: ObservableObject {
 }
 
 struct PreferencesView: View {
-    @StateObject private var vm = PreferencesViewModel()
-    @Environment(\.dismiss) private var dismiss
+    /// Owned by PreferencesWindowController for the life of one open window.
+    @ObservedObject var vm: PreferencesViewModel
+    let onDone: () -> Void
     @State private var draggingID: UUID?
 
     var body: some View {
@@ -110,7 +111,7 @@ struct PreferencesView: View {
                 Spacer()
                 Button("Done") {
                     vm.persist()
-                    dismiss()
+                    onDone()
                 }
                 .keyboardShortcut(.defaultAction)
             }
@@ -189,49 +190,27 @@ private struct RowReorderDelegate: DropDelegate {
 }
 
 #Preview {
-    PreferencesView()
+    PreferencesView(vm: PreferencesViewModel(store: nil), onDone: {})
 }
 
-/// Opens Preferences with no text field focused. When the window is shown,
-/// its first text field (the .txt menu label) became first responder with all
-/// its text selected, so the next keystroke replaced it. This clears that when
-/// the view first lands in its window and each time the window is shown again
-/// after being closed (SwiftUI reuses the Settings window). Switching apps
-/// leaves focus alone; clicking or tabbing into a field works as before.
+/// Opens Settings with no text field focused. When the window is shown, its
+/// first text field (the .txt menu label) became first responder with all its
+/// text selected, so the next keystroke replaced it. This clears that when the
+/// view lands in its window. The window is created fresh on every open
+/// (PreferencesWindowController), so this runs once per open; bringing an
+/// already open window forward leaves the user's focus alone. Clicking or
+/// tabbing into a field works as before.
 private struct InitialFocusClearer: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView { ClearerView() }
     func updateNSView(_ nsView: NSView, context: Context) {}
 
     private final class ClearerView: NSView {
-        private var reopenedAfterClose = false
-        private var observers: [NSObjectProtocol] = []
-
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
-            observers.forEach(NotificationCenter.default.removeObserver)
-            observers = []
-            guard let window else { return }
-            clearTextFocus(in: window)
-            let center = NotificationCenter.default
-            observers.append(center.addObserver(
-                forName: NSWindow.willCloseNotification, object: window, queue: .main
-            ) { [weak self] _ in self?.reopenedAfterClose = true })
-            observers.append(center.addObserver(
-                forName: NSWindow.didBecomeKeyNotification, object: window, queue: .main
-            ) { [weak self, weak window] _ in
-                guard let self, let window, self.reopenedAfterClose else { return }
-                self.reopenedAfterClose = false
-                self.clearTextFocus(in: window)
-            })
-        }
-
-        private func clearTextFocus(in window: NSWindow) {
             DispatchQueue.main.async { [weak window] in
                 guard let window, window.firstResponder is NSText else { return }
                 window.makeFirstResponder(nil)
             }
         }
-
-        deinit { observers.forEach(NotificationCenter.default.removeObserver) }
     }
 }
