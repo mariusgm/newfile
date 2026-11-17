@@ -52,6 +52,13 @@ Primary: GitHub DMG + Homebrew tap `mariusgm/newfile` (free, open source).
 
 ## Roadmap
 
+### Next release after 0.2.5 — template editor basics (operator, 2026-11-16)
+
+**Scheduled scope, not implemented:** native Find/Replace in the existing template sheet, literal plain-text input (no automatic quote/dash substitutions or autocorrection), and reliable native undo/redo. Small secondary Find affordance + Command-F; retain Save/Cancel/Remove and the existing template data format. First verify build 8's native behavior so existing capabilities are not reported as missing. Prefer platform controls with no editor dependency.
+
+Spec and acceptance checks: [Template editor basics](docs/specs/2026-11-16-template-editor-basics-design.md). Target is the next release after 0.2.5 (8), released 2026-11-16; version number/date not assigned here. Syntax highlighting, line numbers, formatting toolbar and template variables remain deferred. No code or release change is included in this roadmap entry.
+
+
 **0.2.5 — SHIPPED 2026-11-16 (operator decision 2026-11-05):** uppercase extensions (#7), in-app `Support NewFile…` item, macOS 27 setup text (#10), Preferences opening with no field selected; added 2026-11-15 before release: one Settings window. Details in the entries below.
 
 - **Menu labels for custom + renamed types (issue #2)** — SHIPPED in v0.2.2 (2026-09-02), option 2 of 3. Three reporters, one root cause: `displayName` is write-once and unreachable from the UI, while the menu renders only it (`Extension/FinderSync.swift:129`). `App/PreferencesView.swift:31` hardcodes `displayName: "New file"` for every custom type, and `FileTypeRow` exposes only `enabled` / `ext` / `baseName` / `template` — so custom types are permanently "New file", and editing a built-in's base name changes the created filename but never the menu label.
