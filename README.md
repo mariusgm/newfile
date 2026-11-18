@@ -4,7 +4,7 @@ By [mariusgm](https://github.com/mariusgm) · [newfile.dev](https://newfile.dev)
 
 **Free, open-source, native.** A small [Finder Sync Extension](https://developer.apple.com/documentation/findersync/fifindersync) that adds the missing "New File" button to macOS Finder — right-click menu and toolbar. No Automator, no shell scripts, no setup beyond enabling the extension once.
 
-- **Any file type** — `.txt` enabled by default, plus 7 built-in presets (`.md`, `.json`, `.sh`, `.env`, `.yml`, `.gitignore`, `.html`). Add your own (`.tsx`, `.toml`, whatever you need).
+- **Any file type** — `.txt` enabled by default, plus 8 built-in presets (`.md`, `.json`, `.sh`, `.env`, `.yml`, `.gitignore`, `.html`, `.rtf`). Add your own (`.tsx`, `.toml`, whatever you need).
 - **Starter templates** — pre-fill new files with frontmatter, shebang lines, a JSON skeleton, or any boilerplate you reuse.
 - **Drag-to-reorder** — set the menu order in Settings; the first enabled type is the toolbar's one-click action.
 - **Submenu mode** — optionally collapse all types under a single "New File ▸" right-click entry.
@@ -84,14 +84,16 @@ In Xcode: select the **NewFile** scheme, ⌘R to build & run. See [`setup.md`](s
 
 ```
 newfile/
-├── App/                 SwiftUI host app — onboarding window only
+├── App/                 SwiftUI host app — setup window, Settings (file types + templates), uninstall
 ├── Extension/           FIFinderSync subclass — toolbar + context menu + file creation
+├── Shared/              file-type model, presets and settings store used by both targets
+├── Tests/               unit tests
 ├── project.yml          xcodegen project definition (regenerable)
 ├── README.md
 └── setup.md             codesigning + notarization + release notes
 ```
 
-The host app (`NewFile.app`) is intentionally minimal — its only job is to embed the Finder Sync extension and present onboarding. All the work happens in `Extension/FinderSync.swift`.
+The host app (`NewFile.app`) embeds the Finder Sync extension and holds the setup window and Settings, where you add, edit and reorder file types. Files are created by the extension, in `Extension/FinderSync.swift`.
 
 ## Uninstall
 
