@@ -37,6 +37,18 @@ final class FileTypePersistenceTests: XCTestCase {
         XCTAssertEqual(out.last, lastSaved.last, "the last valid saved entry is written unchanged")
     }
 
+    func testHeldRow_keepsOtherEdits_withLastSavedExtension() {
+        let lastSaved = saved()
+        var edited = lastSaved
+        edited[edited.count - 1].ext = ""
+        edited[edited.count - 1].template = "edited while invalid"
+
+        let out = FileTypePersistence.entriesToSave(edited: edited, lastSaved: lastSaved)
+
+        XCTAssertEqual(out.last?.ext, "R")
+        XCTAssertEqual(out.last?.template, "edited while invalid")
+    }
+
     func testInvalidRow_keepsItsPositionAfterReorder() {
         let lastSaved = saved()
         var edited = lastSaved

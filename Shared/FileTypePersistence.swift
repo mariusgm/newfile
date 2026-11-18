@@ -4,9 +4,10 @@ import Foundation
 ///
 /// A custom row whose extension is mid-edit (empty or invalid) must not reach
 /// the Finder menu, but it must not erase the saved type either: until the
-/// field is valid again, the last saved version of that row is written in its
-/// place. A row that was never valid is left out. A deleted row is absent from
-/// `edited`, so it stays deleted.
+/// field is valid again, the row is written with its last saved extension
+/// (its other edits, such as the template, are kept). A row that was never
+/// valid is left out. A deleted row is absent from `edited`, so it stays
+/// deleted.
 enum FileTypePersistence {
 
     static func entriesToSave(edited: [FileTypeEntry],
@@ -14,7 +15,11 @@ enum FileTypePersistence {
         let savedByID = Dictionary(lastSaved.map { ($0.id, $0) },
                                    uniquingKeysWith: { first, _ in first })
         return edited.compactMap { row in
-            isValid(row) ? row : savedByID[row.id]
+            if isValid(row) { return row }
+            guard let saved = savedByID[row.id] else { return nil }
+            var held = row
+            held.ext = saved.ext
+            return held
         }
     }
 

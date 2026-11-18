@@ -35,7 +35,7 @@ final class PreferencesViewModel: ObservableObject {
 
     /// Rows with an invalid extension stay visible in the UI but never reach
     /// the store as typed (the extension would render them in the Finder menu).
-    /// A saved row keeps its last saved version until the field is valid; a
+    /// A saved row keeps its last saved extension until the field is valid; a
     /// row that was never valid is left out.
     func persist() {
         let toSave = FileTypePersistence.entriesToSave(edited: fileTypes, lastSaved: lastSaved)
