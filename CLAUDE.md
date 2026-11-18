@@ -52,6 +52,21 @@ Primary: GitHub DMG + Homebrew tap `mariusgm/newfile` (free, open source).
 
 ## Roadmap
 
+### Next release after 0.2.5 — template editor and Settings improvements (operator, 2026-11-16)
+
+**Scheduled scope, not implemented:** native Find/Replace in the existing template sheet, literal plain-text input (no automatic quote/dash substitutions or autocorrection), and reliable native undo/redo. Small secondary Find affordance + Command-F; retain Save/Cancel/Remove and the existing template data format. First verify build 8's native behavior so existing capabilities are not reported as missing. Prefer platform controls with no editor dependency.
+
+Spec and acceptance checks: [Template editor basics](docs/specs/2026-11-16-template-editor-basics-design.md). Target is the next release after 0.2.5 (8), released 2026-11-16; version number/date not assigned here. Syntax highlighting, line numbers, formatting toolbar and template variables remain deferred. No code or release change is included in this roadmap entry.
+
+**Additional next-release scope (operator, 2026-11-16), in priority order:**
+
+1. **Protect saved custom types during invalid edits.** `PreferencesViewModel.validOnly` currently filters invalid extensions out of the persisted list. Source review indicates that clearing or invalidating an existing extension, then letting the debounce fire or closing Settings, can remove that saved type and its template; reproduce before calling it a verified runtime defect. Keep the last valid saved entry while its edit is invalid, show an inline explanation, and commit the updated entry once valid. A new never-valid row must not enter the Finder menu. Deliberate deletion must still work. Acceptance: edit an existing custom type with a template to an empty/invalid extension, wait past the debounce, close/reopen Settings, and confirm the original saved entry and template remain; then correct the extension and confirm the valid edit persists. Keep this a focused persistence fix, not a new draft-management system.
+2. **Preview the resulting filename.** Show a small secondary example derived from the same filename-generation logic used by Finder: `Creates: Untitled.R` or `Creates: .env · hidden file`. Update it with extension/default-filename edits; show no valid-result claim for invalid input. The example assumes no filename collision; actual files still use the existing numbering rule. Acceptance: ordinary names, blank base names/dotfiles, uppercase extensions and a base name already containing its extension all match the first filename Finder would create. No extra main screen or duplicate naming algorithm.
+3. **Optional if small: confirm deletion of a custom type containing a template.** Name the type in a native confirmation with Cancel as the safe action; confirm before removing the row or saved template. Custom rows without template content retain one-click deletion. Acceptance: Cancel leaves the row and content intact; Delete removes only that custom type and remains removed after reopening. No general undo/history system in this scope.
+
+Ship these alongside the editor basics; items 1–2 are planned, item 3 is a bounded optional addition. Syntax highlighting, template variables, extra presets and icon work do not enter this release through this decision. These are code-review opportunities, not claims of new user reports. Implementation and validation remain pending.
+
+
 **0.2.5 — SHIPPED 2026-11-16 (operator decision 2026-11-05):** uppercase extensions (#7), in-app `Support NewFile…` item, macOS 27 setup text (#10), Preferences opening with no field selected; added 2026-11-15 before release: one Settings window. Details in the entries below.
 
 - **Menu labels for custom + renamed types (issue #2)** — SHIPPED in v0.2.2 (2026-09-02), option 2 of 3. Three reporters, one root cause: `displayName` is write-once and unreachable from the UI, while the menu renders only it (`Extension/FinderSync.swift:129`). `App/PreferencesView.swift:31` hardcodes `displayName: "New file"` for every custom type, and `FileTypeRow` exposes only `enabled` / `ext` / `baseName` / `template` — so custom types are permanently "New file", and editing a built-in's base name changes the created filename but never the menu label.
