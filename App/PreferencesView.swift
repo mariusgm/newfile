@@ -9,12 +9,18 @@ final class PreferencesViewModel: ObservableObject {
         didSet { store?.useRightClickSubmenu = useRightClickSubmenu }
     }
 
+    /// What the store holds now. A saved row whose extension is mid-edit is
+    /// written from here, so an invalid field never deletes a saved type.
+    @Published private(set) var lastSaved: [FileTypeEntry]
+
     private let store: SettingsStore?
     private var persistCancellable: AnyCancellable?
 
     init(store: SettingsStore? = SettingsStore.appGroupStore()) {
         self.store = store
-        self.fileTypes = store?.fileTypes ?? SeedPresets.builtIns
+        let initial = store?.fileTypes ?? SeedPresets.builtIns
+        self.fileTypes = initial
+        self.lastSaved = initial
         self.useRightClickSubmenu = store?.useRightClickSubmenu ?? false
 
         // Persist off a debounce, not per keystroke: every edit used to JSON-encode
@@ -22,19 +28,29 @@ final class PreferencesViewModel: ObservableObject {
         persistCancellable = $fileTypes
             .dropFirst()
             .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
-            .sink { [store] types in
-                store?.fileTypes = Self.validOnly(types)
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated { self?.persist() }
             }
     }
 
     /// Rows with an invalid extension stay visible in the UI but never reach
-    /// the store (the extension would render them in the Finder menu).
-    nonisolated private static func validOnly(_ types: [FileTypeEntry]) -> [FileTypeEntry] {
-        types.filter { $0.isBuiltIn || (try? FileTypeEntry.validateExtension($0.ext)) != nil }
+    /// the store as typed (the extension would render them in the Finder menu).
+    /// A saved row keeps its last saved version until the field is valid; a
+    /// row that was never valid is left out.
+    func persist() {
+        let toSave = FileTypePersistence.entriesToSave(edited: fileTypes, lastSaved: lastSaved)
+        store?.fileTypes = toSave
+        lastSaved = toSave
     }
 
-    func persist() {
-        store?.fileTypes = Self.validOnly(fileTypes)
+    func isHoldingLastSaved(_ entry: FileTypeEntry) -> Bool {
+        FileTypePersistence.isHoldingLastSaved(entry, lastSaved: lastSaved)
+    }
+
+    /// The saved extension Finder still uses while this row's field is invalid.
+    func heldSavedExt(for entry: FileTypeEntry) -> String? {
+        guard isHoldingLastSaved(entry) else { return nil }
+        return lastSaved.first { $0.id == entry.id }?.ext
     }
 
     func delete(_ entry: FileTypeEntry) {
@@ -85,7 +101,8 @@ struct PreferencesView: View {
                             onReorderDrag: {
                                 draggingID = entry.id
                                 return NSItemProvider(object: entry.id.uuidString as NSString)
-                            }
+                            },
+                            heldSavedExt: vm.heldSavedExt(for: entry)
                         )
                         .padding(.horizontal, 8)
                         .onDrop(of: [.text],
