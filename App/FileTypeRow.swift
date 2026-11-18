@@ -6,6 +6,9 @@ struct FileTypeRow: View {
     /// Supplied by the container; attaches drag-reorder to the handle only,
     /// so drags inside text fields never start a row move.
     let onReorderDrag: (() -> NSItemProvider)?
+    /// Set while this row's extension field is invalid and Finder keeps using
+    /// the last saved version; names that saved extension.
+    var heldSavedExt: String? = nil
 
     @State private var showTemplateEditor = false
     @State private var extError: String? = nil
@@ -17,6 +20,38 @@ struct FileTypeRow: View {
     static let deleteColumnWidth: CGFloat = 24
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            fieldsRow
+            if let heldSavedExt {
+                heldNotice(heldSavedExt)
+            }
+        }
+        .padding(.vertical, 4)
+        .sheet(isPresented: $showTemplateEditor) {
+            TemplateEditorSheet(extLabel: entry.ext, template: $entry.template)
+        }
+        .onAppear {
+            // A just-added custom row (no extension yet) is ready to type into.
+            // Set on the next run-loop turn: set during onAppear, the request
+            // was dropped and focus fell to the window's first text field.
+            if !entry.isBuiltIn && entry.ext.isEmpty {
+                DispatchQueue.main.async { extFocused = true }
+            }
+        }
+    }
+
+    /// Secondary line aligned with the extension field. Only shown while an
+    /// edit is invalid, so the user knows nothing was lost.
+    private func heldNotice(_ savedExt: String) -> some View {
+        (Text("Finder keeps using ")
+         + Text(".\(savedExt)").font(.system(.caption, design: .monospaced))
+         + Text(" until this extension is valid."))
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .padding(.leading, Self.handleColumnWidth + 8 + Self.toggleColumnWidth + 8)
+    }
+
+    private var fieldsRow: some View {
         HStack(spacing: 8) {
             dragHandle
                 .frame(width: Self.handleColumnWidth)
@@ -54,18 +89,6 @@ struct FileTypeRow: View {
 
             deleteColumn
                 .padding(.leading, 4)
-        }
-        .padding(.vertical, 4)
-        .sheet(isPresented: $showTemplateEditor) {
-            TemplateEditorSheet(extLabel: entry.ext, template: $entry.template)
-        }
-        .onAppear {
-            // A just-added custom row (no extension yet) is ready to type into.
-            // Set on the next run-loop turn: set during onAppear, the request
-            // was dropped and focus fell to the window's first text field.
-            if !entry.isBuiltIn && entry.ext.isEmpty {
-                DispatchQueue.main.async { extFocused = true }
-            }
         }
     }
 
