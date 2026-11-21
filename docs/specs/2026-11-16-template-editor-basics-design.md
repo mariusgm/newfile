@@ -2,7 +2,7 @@
 
 Date: 2026-11-16
 Status: scoped for the next release by operator request; implementation and device validation pending.
-Release: next version after released 0.2.5 (8); no version bump or release date in this change.
+Release: next version after released 0.2.5 (8), named 0.2.6 by the operator on 2026-11-21; no version bump or release date in this change.
 
 ## Decision and user task
 
