@@ -50,6 +50,14 @@ targets:
         SUEnableAutomaticChecks: true
         SUEnableInstallerLauncherService: true
         SUScheduledCheckInterval: 86400
+        # SPIKE (issue #5), Route 2: Services entry for a folder in Finder.
+        NSServices:
+          - NSMenuItem:
+              default: New Text File Here
+            NSMessage: newTextFileHere
+            NSPortName: NewFile
+            NSSendFileTypes:
+              - public.folder
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.newfile.NewFile

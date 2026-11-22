@@ -4,6 +4,19 @@ import os
 
 private let log = Logger(subsystem: "dev.newfile.NewFile", category: "extension")
 
+// SPIKE (issue #5): which folders the extension claims. Switched at runtime by a
+// distributed notification so one build covers every route; never ships.
+private let spikeLog = Logger(subsystem: "dev.newfile.NewFile.spike", category: "extension")
+
+enum SpikeMode: String {
+    case root = "root"                    // shipping behaviour: ["/"]
+    case rootPlusICloud = "root+icloud"   // Route 1: "/" plus the iCloud Drive folders
+    case iCloudOnly = "icloud-only"       // Route 1-only: just the iCloud Drive folders
+
+    static let defaultsKey = "spikeMode"
+    static let changed = Notification.Name("dev.newfile.NewFile.spike.mode")
+}
+
 final class FinderSync: FIFinderSync {
 
     private let settings: SettingsStore? = SettingsStore.appGroupStore()
@@ -15,8 +28,66 @@ final class FinderSync: FIFinderSync {
 
     override init() {
         super.init()
-        FIFinderSyncController.default().directoryURLs = [URL(fileURLWithPath: "/")]
+        let saved = UserDefaults.standard.string(forKey: SpikeMode.defaultsKey) ?? ""
+        applySpikeMode(SpikeMode(rawValue: saved) ?? .rootPlusICloud, reason: "init")
+        DistributedNotificationCenter.default().addObserver(
+            self, selector: #selector(spikeModeChanged(_:)),
+            name: SpikeMode.changed, object: nil,
+            suspensionBehavior: .deliverImmediately
+        )
         log.info("FinderSync init")
+    }
+
+    // MARK: - Spike (issue #5)
+
+    /// The sandbox reports the container as home; iCloud Drive lives under the real one.
+    private static func realHome() -> URL {
+        if let pw = getpwuid(getuid()), let dir = pw.pointee.pw_dir {
+            return URL(fileURLWithFileSystemRepresentation: dir, isDirectory: true, relativeTo: nil)
+        }
+        return FileManager.default.homeDirectoryForCurrentUser
+    }
+
+    private static func iCloudURLs() -> [URL] {
+        let home = realHome()
+        return [
+            home.appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs", isDirectory: true),
+            home.appendingPathComponent("Desktop", isDirectory: true),
+            home.appendingPathComponent("Documents", isDirectory: true),
+        ]
+    }
+
+    private var spikeMode: SpikeMode = .rootPlusICloud
+
+    private func applySpikeMode(_ mode: SpikeMode, reason: String) {
+        let root = URL(fileURLWithPath: "/")
+        let urls: Set<URL>
+        switch mode {
+        case .root: urls = [root]
+        case .rootPlusICloud: urls = Set([root] + Self.iCloudURLs())
+        case .iCloudOnly: urls = Set(Self.iCloudURLs())
+        }
+        spikeMode = mode
+        UserDefaults.standard.set(mode.rawValue, forKey: SpikeMode.defaultsKey)
+        FIFinderSyncController.default().directoryURLs = urls
+        let paths = urls.map(\.path).sorted().joined(separator: " | ")
+        spikeLog.info("mode=\(mode.rawValue, privacy: .public) reason=\(reason, privacy: .public) directoryURLs=\(paths, privacy: .public)")
+    }
+
+    @objc private func spikeModeChanged(_ note: Notification) {
+        guard let raw = note.object as? String, let mode = SpikeMode(rawValue: raw) else {
+            spikeLog.error("mode notification ignored object=\(String(describing: note.object), privacy: .public)")
+            return
+        }
+        applySpikeMode(mode, reason: "notification")
+    }
+
+    override func beginObservingDirectory(at url: URL) {
+        spikeLog.info("beginObserving mode=\(self.spikeMode.rawValue, privacy: .public) url=\(url.path, privacy: .public)")
+    }
+
+    override func endObservingDirectory(at url: URL) {
+        spikeLog.info("endObserving url=\(url.path, privacy: .public)")
     }
 
     // MARK: - Toolbar item
@@ -32,6 +103,10 @@ final class FinderSync: FIFinderSync {
     // MARK: - Menus
 
     override func menu(for menu: FIMenuKind) -> NSMenu? {
+        let controller = FIFinderSyncController.default()
+        let target = controller.targetedURL()?.path ?? "nil"
+        let selected = controller.selectedItemURLs()?.count ?? -1
+        spikeLog.info("menu kind=\(menu.rawValue) mode=\(self.spikeMode.rawValue, privacy: .public) target=\(target, privacy: .public) selected=\(selected)")
         switch menu {
         case .contextualMenuForItems:
             return nil

@@ -1,6 +1,10 @@
 import AppKit
+import os
 import Sparkle
 import SwiftUI
+
+// SPIKE (issue #5), Route 2: a Services entry. Never ships as is.
+private let spikeLog = Logger(subsystem: "dev.newfile.NewFile.spike", category: "service")
 
 @main
 struct NewFileApp: App {
@@ -73,6 +77,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         verifyAppGroup()
+
+        NSApp.servicesProvider = self
+        NSUpdateDynamicServices()
+        spikeLog.info("servicesProvider registered")
+    }
+
+    /// NSServices provider for "New Text File Here" (NSMessage `newTextFileHere`).
+    /// The folder arrives as a file URL on the service pasteboard.
+    @objc func newTextFileHere(
+        _ pboard: NSPasteboard,
+        userData: String,
+        error: AutoreleasingUnsafeMutablePointer<NSString>
+    ) {
+        let urls = (pboard.readObjects(
+            forClasses: [NSURL.self],
+            options: [.urlReadingFileURLsOnly: true]
+        ) as? [URL]) ?? []
+        let types = (pboard.types ?? []).map(\.rawValue).joined(separator: ",")
+        spikeLog.info("service invoked urls=\(urls.count) first=\(urls.first?.path ?? "nil", privacy: .public) types=\(types, privacy: .public)")
+        guard let directory = urls.first else {
+            error.pointee = "No folder on the service pasteboard."
+            return
+        }
+        let scoped = directory.startAccessingSecurityScopedResource()
+        defer { if scoped { directory.stopAccessingSecurityScopedResource() } }
+        let url = FilenameGenerator.uniqueFileURL(in: directory, baseName: "New Text File", ext: "txt")
+        do {
+            try Data().write(to: url, options: [.withoutOverwriting])
+            spikeLog.info("service created file=\(url.path, privacy: .public) scoped=\(scoped)")
+        } catch let failure {
+            spikeLog.error("service create failed scoped=\(scoped) path=\(url.path, privacy: .public) error=\(String(describing: failure), privacy: .public)")
+            error.pointee = failure.localizedDescription as NSString
+        }
     }
 
     private func verifyAppGroup() {
